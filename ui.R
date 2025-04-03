@@ -8,7 +8,7 @@ ui <- page_navbar(
                     h1 { font-family: 'Inter', sans-serif; }
                   "),
   nav_panel(title = "Home",
-            h1("Downtown Yonge"),
+            h1("Downtown Yonge BIA"),
             card(
               full_screen = FALSE,
               card_body(
