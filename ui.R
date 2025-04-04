@@ -32,11 +32,66 @@ ui <- page_navbar(
             )
             
             
-            ),
+  ),
   
   
   nav_panel(title = "Visitors", 
-            p("Second page content.")),
+            h1("Downtown Yonge BIA"),
+            navset_card_tab(
+              full_screen = FALSE,
+              height = 500,
+              nav_panel(
+                "Visitor Levels",
+                card_title("Overall Visitor Patterns"),
+                layout_sidebar(
+                  fillable = TRUE,
+                  height = "100%",
+                  sidebar = sidebar(
+                    selectInput(
+                      "year",
+                      "Select Year",
+                      choices = c("2023", "2024"),
+                      selected = "2024",
+                      selectize = TRUE
+                    ),
+                    selectInput(
+                      "quarter",
+                      "Select Quarter",
+                      choices = c("Q1", "Q2", "Q3", "Q4"),
+                      selected = "Q4",
+                      selectize = TRUE
+                    )
+                  ),
+                  plotlyOutput("visitorLevels") 
+                )
+              ),
+              nav_panel(
+                "Visitor Types",
+                card_title("Visits by Visitor Type"),
+                layout_sidebar(
+                  fillable = TRUE,
+                  height = "100%",
+                  sidebar = sidebar(
+                    selectInput(
+                      "year",
+                      "Select Year",
+                      choices = c("2023", "2024"),
+                      selected = "2024",
+                      selectize = TRUE
+                    ),
+                    selectInput(
+                      "quarter",
+                      "Select Quarter",
+                      choices = c("Q1", "Q2", "Q3", "Q4"),
+                      selected = "Q4",
+                      selectize = TRUE
+                    )
+                  ),
+                  plotlyOutput("visitorTypes")  
+                )
+              )
+            )
+  ),
   
   nav_panel("Neighbourhood Profile", 
             p("Third page content.")),
