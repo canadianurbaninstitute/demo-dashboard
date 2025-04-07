@@ -79,10 +79,8 @@ server <- function(input, output, session) {
                              aes(x = paste0(input$quarter, " ", as.character(Year)),
                                  y = Visits, fill = factor(Type, levels = c("Infrequent Visitor", "Recurring Visitor", "Resident")),
                                  text = paste("Visits:", scales::comma(round(Visits))))) +
-      geom_bar(aes(color = factor(Type, levels = c("Infrequent Visitor", "Recurring Visitor", "Resident"))),
-               position = "stack", stat = "identity", width = 0.7, linewidth = 1) +
-      scale_fill_manual(values = c("#222", "#002940", "#00AEF6")) +
-      scale_color_manual(values = c("#FFFFFF", "#002940", "#00AEF6")) +
+      geom_bar(position = "stack", stat = "identity", width = 0.7, linewidth = 1) +
+      scale_fill_manual(values = c("#FFD931", "#002940", "#00AEF6")) +
       scale_y_continuous(labels = scales::comma_format(scale = 1e-3)) +
       labs(x = "Year", y = "Visits (Thousands)") +
       theme(
@@ -91,7 +89,8 @@ server <- function(input, output, session) {
         legend.background = element_rect(fill = "transparent", color = NA),
         text = element_text(color = "#fff"),
         axis.text = element_text(color = "#fff"),
-        axis.title = element_text(color = "#fff")
+        axis.title = element_text(color = "#fff"),
+        axis.title.x = element_blank()
       )
     
     # convert to plotly
