@@ -17,6 +17,7 @@ ff_time_of_day = read_csv("./data/ff_time_of_day.csv") %>%
 ff_type = read_csv("./data/ff_vis_type.csv") %>%
   select(-...1) %>% rename("Visits" = Count)
 
+nc <- st_read("./data/downtown_yonge.geojson")
 
 
 

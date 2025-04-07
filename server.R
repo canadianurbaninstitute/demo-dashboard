@@ -6,7 +6,10 @@ server <- function(input, output, session) {
     maplibre(style = carto_style("dark-matter"),
              center = c(-79.381070, 43.656183),
              zoom = 14) |> 
-      add_navigation_control()
+      add_fill_layer(id = "nc_data",
+                     source = nc,
+                     fill_color = "#00AEF6",
+                     fill_opacity = 0.5)
   })
   
   
@@ -55,13 +58,14 @@ server <- function(input, output, session) {
     
     # convert into a plotly
     ggplotly(plotOverallVisits) %>%
-      config(displayModeBar = TRUE) %>%
+      config(displayModeBar = FALSE) %>%
       layout(
         paper_bgcolor = 'rgba(0,0,0,0)',
         plot_bgcolor = 'rgba(0,0,0,0)',
         font = list(color = "#fff", family = "Inter"),
         title = list(font = list(family = "Roboto Mono", color = "#fff")),
-        yaxis = list(fixedrange = TRUE)
+        yaxis = list(fixedrange = TRUE, gridcolor = "#4f4f4f", showline=TRUE, linewidth=1, linecolor='#4f4f4f',mirror=TRUE),
+        xaxis = list(gridcolor = "#4f4f4f", showline=TRUE, linewidth=1, linecolor='#4f4f4f',mirror=TRUE)
       )
   })
   
@@ -81,8 +85,8 @@ server <- function(input, output, session) {
                                  text = paste("Visits:", scales::comma(round(Visits))))) +
       geom_bar(aes(color = factor(Type, levels = c("Infrequent Visitor", "Recurring Visitor", "Resident"))),
                position = "stack", stat = "identity", width = 0.7, linewidth = 1) +
-      scale_fill_manual(values = c("#222", "#002940", "#00AEF6")) +
-      scale_color_manual(values = c("#FFFFFF", "#002940", "#00AEF6")) +
+      scale_fill_manual(values = c("#FFD931", "#002940", "#00AEF6")) +
+      scale_color_manual(values = c("#FFD931", "#002940", "#00AEF6")) +
       scale_y_continuous(labels = scales::comma_format(scale = 1e-3)) +
       labs(x = "Year", y = "Visits (Thousands)") +
       theme(
@@ -96,7 +100,7 @@ server <- function(input, output, session) {
     
     # convert to plotly
     ggplotly(plotVisitorType, tooltip = "text") %>%
-      config(displayModeBar = TRUE) %>%
+      config(displayModeBar = FALSE) %>%
       layout(
         paper_bgcolor = 'rgba(0,0,0,0)',
         plot_bgcolor = 'rgba(0,0,0,0)',
@@ -106,10 +110,11 @@ server <- function(input, output, session) {
           font = list(size = 12),
           title = "",
           orientation = "h",
-          x = 0.5,
+          x = 1,
           xanchor = "center"
         ),
-        yaxis = list(fixedrange = TRUE)
+        yaxis = list(fixedrange = TRUE, gridcolor = "#4f4f4f", showline=TRUE, linewidth=1, linecolor='#4f4f4f',mirror=TRUE),
+        xaxis = list(gridcolor = "#4f4f4f", showline=TRUE, linewidth=1, linecolor='#4f4f4f',mirror=TRUE)
       )
   })
   

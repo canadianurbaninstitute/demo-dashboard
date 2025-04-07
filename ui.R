@@ -19,13 +19,13 @@ ui <- page_navbar(
             h1("Highlights"),
             layout_columns(
               value_box(
-                title = "Number of Visitors", value = "28,000", ,
+                title = "Number of Visitors", value = "28,000 (+5%)", ,
                 theme = "success", showcase = bsicons::bs_icon("arrow-up"),
                 showcase_layout = "left center", full_screen = FALSE, fill = TRUE,
                 height = NULL
               ),
               value_box(
-                title = "Number of Visitors", value = "10,000", , theme = "danger",
+                title = "Number of Visitors", value = "10,000 (-3%)", , theme = "danger",
                 showcase = bsicons::bs_icon("arrow-down"), showcase_layout = "left center",
                 full_screen = FALSE, fill = TRUE, height = NULL
               )
@@ -37,7 +37,7 @@ ui <- page_navbar(
   
   nav_panel(title = "Visitors", 
             h1("Downtown Yonge BIA"),
-            navset_card_tab(
+            navset_card_pill(
               full_screen = FALSE,
               height = 500,
               nav_panel(
