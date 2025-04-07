@@ -87,7 +87,6 @@ server <- function(input, output, session) {
                position = "stack", stat = "identity", width = 0.7, linewidth = 1) +
       scale_fill_manual(values = c("#FFD931", "#002940", "#00AEF6")) +
       scale_color_manual(values = c("#FFD931", "#002940", "#00AEF6")) +
-      scale_y_continuous(labels = scales::comma_format(scale = 1e-3)) +
       labs(x = "Year", y = "Visits (Thousands)") +
       theme(
         panel.background = element_rect(fill = "transparent", color = NA),
@@ -95,7 +94,8 @@ server <- function(input, output, session) {
         legend.background = element_rect(fill = "transparent", color = NA),
         text = element_text(color = "#fff"),
         axis.text = element_text(color = "#fff"),
-        axis.title = element_text(color = "#fff")
+        axis.title = element_text(color = "#fff"),
+        axis.title.x = element_blank()
       )
     
     # convert to plotly
