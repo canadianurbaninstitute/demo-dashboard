@@ -37,15 +37,10 @@ ui <- page_navbar(
   
   nav_panel(title = "Visitors", 
             h1("Downtown Yonge BIA"),
-            navset_card_pill(
-              full_screen = FALSE,
-              height = 500,
+            navset_pill(
               nav_panel(
-                "Visitor Levels",
-                card_title("Overall Visitor Patterns"),
+                title = "Visitor Trends",
                 layout_sidebar(
-                  fillable = TRUE,
-                  height = "100%",
                   sidebar = sidebar(
                     selectInput(
                       "year",
@@ -62,33 +57,25 @@ ui <- page_navbar(
                       selectize = TRUE
                     )
                   ),
-                  plotlyOutput("visitorLevels") 
+                  card(
+                    card_body(plotlyOutput("visitorLevels"))
+                  ),
+                  card(
+                    card_body(plotlyOutput("visitorTypes"))
+                  ),
+                  card(
+                    card_body(
+                      layout_column_wrap(
+                        width = 1/2,
+                        plotlyOutput("visitorDoW"),
+                        plotlyOutput("visitorToD")
+                      )
+                    )
+                  )
                 )
               ),
               nav_panel(
-                "Visitor Types",
-                card_title("Visits by Visitor Type"),
-                layout_sidebar(
-                  fillable = TRUE,
-                  height = "100%",
-                  sidebar = sidebar(
-                    selectInput(
-                      "year",
-                      "Select Year",
-                      choices = c("2023", "2024"),
-                      selected = "2024",
-                      selectize = TRUE
-                    ),
-                    selectInput(
-                      "quarter",
-                      "Select Quarter",
-                      choices = c("Q1", "Q2", "Q3", "Q4"),
-                      selected = "Q4",
-                      selectize = TRUE
-                    )
-                  ),
-                  plotlyOutput("visitorTypes")  
-                )
+                title = "Visitor Demographics"
               )
             )
   ),

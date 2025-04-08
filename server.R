@@ -46,7 +46,8 @@ server <- function(input, output, session) {
         date_labels = "%b %y",
         limits = c(ymd("2021-01-01"), ymd("2025-01-01")),
       ) +
-      labs(x = "Date", y = "Visit Count") +
+      scale_y_continuous(labels = scales::comma_format(scale = 1e-3)) +
+      labs(title = "Monthly Visits since 2021", x = "Date", y = "Visits (Thousands)") +
       theme(
         panel.background = element_rect(fill = "transparent", color = NA),
         plot.background = element_rect(fill = "transparent", color = NA),
@@ -87,7 +88,8 @@ server <- function(input, output, session) {
                position = "stack", stat = "identity", width = 0.7, linewidth = 1) +
       scale_fill_manual(values = c("#FFD931", "#002940", "#00AEF6")) +
       scale_color_manual(values = c("#FFD931", "#002940", "#00AEF6")) +
-      labs(x = "Year", y = "Visits (Thousands)") +
+      scale_y_continuous(labels = scales::comma_format(scale = 1e-3)) +
+      labs(title = "Visits by Type of Visitor", x = "Year", y = "Visits (Thousands)") +
       theme(
         panel.background = element_rect(fill = "transparent", color = NA),
         plot.background = element_rect(fill = "transparent", color = NA),
@@ -95,7 +97,8 @@ server <- function(input, output, session) {
         text = element_text(color = "#fff"),
         axis.text = element_text(color = "#fff"),
         axis.title = element_text(color = "#fff"),
-        axis.title.x = element_blank()
+        axis.title.x = element_blank(),
+        legend.position = "top",
       )
     
     # convert to plotly
@@ -110,13 +113,111 @@ server <- function(input, output, session) {
           font = list(size = 12),
           title = "",
           orientation = "h",
-          x = 1,
-          xanchor = "center"
+          x = 0.5, xanchor = "center",
+          y = -0.2, yanchor = "top"
         ),
         yaxis = list(fixedrange = TRUE, gridcolor = "#4f4f4f", showline=TRUE, linewidth=1, linecolor='#4f4f4f',mirror=TRUE),
         xaxis = list(gridcolor = "#4f4f4f", showline=TRUE, linewidth=1, linecolor='#4f4f4f',mirror=TRUE)
       )
   })
+  
+  # Visitor Day of Week Reactivity
+  vistorDayData = reactive({
+    visitorDayFiltered = ff_day_of_week %>%
+      dplyr::filter((Quarter == input$quarter) & (Year == as.numeric(input$year) | Year == as.numeric(input$year) - 1))
+  })
+  
+  # Visitor Day of Week Chart
+  output$visitorDoW = renderPlotly({
+    # generate the plot
+    plotDoW = ggplot(vistorDayData(), aes(x = factor(Day, levels = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")),
+                                          y = Visits, fill = paste0(input$quarter, " ", as.character(Year)),
+                                          text = paste("Visits:", scales::comma(round(Visits))))) +
+      geom_bar(position = "dodge", stat = "identity", width = 0.6) +
+      scale_fill_manual(values = c("#002940", "#00AEF6")) +
+      scale_y_continuous(labels = scales::comma_format(scale = 1e-3)) +
+      labs(title = "Visits by Day of the Week", x = "Day of the Week", y = "Visits (Thousands)") +
+      theme(
+        panel.background = element_rect(fill = "transparent", color = NA),
+        plot.background = element_rect(fill = "transparent", color = NA),
+        legend.background = element_rect(fill = "transparent", color = NA),
+        text = element_text(color = "#fff"),
+        axis.text = element_text(color = "#fff"),
+        axis.title = element_text(color = "#fff"),
+        axis.title.x = element_blank(),
+        legend.position = "top",
+      )
+    
+    # convert to plotly
+    ggplotly(plotDoW, tooltip = "text") %>%
+      config(displayModeBar = FALSE) %>%
+      layout(
+        paper_bgcolor = 'rgba(0,0,0,0)',
+        plot_bgcolor = 'rgba(0,0,0,0)',
+        font = list(color = "#fff", family = "Inter"),
+        title = list(font = list(family = "Roboto Mono", color = "#fff")),
+        legend = list(
+          font = list(size = 12),
+          title = "",
+          orientation = "h",
+          x = 0.5, xanchor = "center",
+          y = -0.2, yanchor = "top"
+        ),
+        yaxis = list(fixedrange = TRUE, gridcolor = "#4f4f4f", showline=TRUE, linewidth=1, linecolor='#4f4f4f',mirror=TRUE),
+        xaxis = list(gridcolor = "#4f4f4f", showline=TRUE, linewidth=1, linecolor='#4f4f4f',mirror=TRUE)
+      )
+  })
+  
+  
+  # Visitor Time of Day Reactivity
+  visitorTimeData = reactive({
+    visitorTimeFiltered = ff_time_of_day %>%
+      dplyr::filter((Quarter == input$quarter) & (Year == as.numeric(input$year) | Year == as.numeric(input$year) - 1))
+  })
+  
+  # Visitor Time of Day Chart
+  output$visitorToD = renderPlotly({
+    # generate the plot
+    plotToD = ggplot(visitorTimeData(), aes(x = factor(Time, levels = c("Early Morning: 12am - 6am", "Morning: 6am - 12pm", "Afternoon: 12pm - 6pm", "Evening: 6pm - 12am")),
+                                           y = Visits, fill = paste0(input$quarter, " ", as.character(Year)),
+                                           text = paste("Visits:", scales::comma(round(Visits))))) +
+      geom_bar(position = "dodge", stat = "identity", width = 0.7) +
+      scale_fill_manual(values = c("#002A41", "#00AEF3")) +
+      scale_y_continuous(labels = scales::comma_format(scale = 1e-3)) +
+      labs(title = "Visits by Time of Day", x = "Time of Day", y = "Visits (Thousands)") +
+      theme(
+        panel.background = element_rect(fill = "transparent", color = NA),
+        plot.background = element_rect(fill = "transparent", color = NA),
+        legend.background = element_rect(fill = "transparent", color = NA),
+        text = element_text(color = "#fff"),
+        axis.text = element_text(color = "#fff"),
+        axis.text.x = element_text(angle = 10, vjust = 0.5, hjust = 1),
+        axis.title = element_text(color = "#fff"),
+        axis.title.x = element_blank(),
+        legend.position = "top", 
+      )
+    
+    # convert to a plotly
+    ggplotly(plotToD, tooltip = "text") %>%
+      config(displayModeBar = FALSE) %>%
+      layout(
+        paper_bgcolor = 'rgba(0,0,0,0)',
+        plot_bgcolor = 'rgba(0,0,0,0)',
+        font = list(color = "#fff", family = "Inter"),
+        title = list(font = list(family = "Roboto Mono", color = "#fff")),
+        legend = list(
+          font = list(size = 12),
+          title = "",
+          orientation = "h",
+          x = 0.5, xanchor = "center",
+          y = -0.2, yanchor = "top"
+        ),
+        yaxis = list(fixedrange = TRUE, gridcolor = "#4f4f4f", showline=TRUE, linewidth=1, linecolor='#4f4f4f',mirror=TRUE),
+        xaxis = list(gridcolor = "#4f4f4f", showline=TRUE, linewidth=1, linecolor='#4f4f4f',mirror=TRUE)
+      )
+  })
+  
+  
   
 }
 
