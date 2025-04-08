@@ -6,10 +6,35 @@ server <- function(input, output, session) {
     maplibre(style = carto_style("dark-matter"),
              center = c(-79.381070, 43.656183),
              zoom = 14) |> 
-      add_fill_layer(id = "nc_data",
-                     source = nc,
+      add_fill_layer(id = "bia_boundary",
+                     source = bia,
                      fill_color = "#00AEF6",
                      fill_opacity = 0.5)
+  })
+  
+  output$businessMap <- renderMaplibre({
+    maplibre(style = carto_style("dark-matter"),
+             center = c(-79.381070, 43.656183),
+             zoom = 14) |> 
+      add_fill_layer(id = "bia_boundary",
+                     source = bia,
+                     fill_color = "#00AEF6",
+                     fill_opacity = 0.5) |> 
+      add_circle_layer(
+        id = "business-layer",
+        source = ms_businesses,
+        circle_color = match_expr(
+          "Group",
+          values = c("Retail", "Services and Other", "Food and Drink"),
+          stops = c("#F03838", "#00AEF6", "#43B171")
+        ),
+        circle_radius = 6,
+        circle_stroke_color = "#ffffff",
+        circle_stroke_width = 2,
+        circle_opacity = 0.8,
+        tooltip = "Group",
+        hover_options = list(circle_radius = 8)
+      )
   })
   
   

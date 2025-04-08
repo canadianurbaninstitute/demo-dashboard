@@ -17,7 +17,17 @@ ff_time_of_day = read_csv("./data/ff_time_of_day.csv") %>%
 ff_type = read_csv("./data/ff_vis_type.csv") %>%
   select(-...1) %>% rename("Visits" = Count)
 
-nc <- st_read("./data/downtown_yonge.geojson")
+bia <- st_read("./data/downtown_yonge.geojson")
+
+ms_businesses <- st_read("./data/ms_businesses.geojson")
+
+mytheme <- bs_theme(preset="bootstrap", version = "5", bg = "#222", fg = "#fff", 
+                  primary = "#00AEF6", secondary = "#002940", success = "#43B171", danger = "#F03838",
+                  warning = "#FFD931", base_font = font_google("Inter"), heading_font = font_google("Roboto Mono"),
+                  navbar_bg = "#00AEF6")
+
+
+
 
 
 

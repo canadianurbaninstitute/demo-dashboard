@@ -1,12 +1,10 @@
 ui <- page_navbar(
   title = "Dashboard Demo",
-  theme = bs_theme(bg = "#222", fg = "#fff", 
-                   primary = "#00AEF6", secondary = "#002940", success = "#43B171", danger = "#F03838",
-                   warning = "#FFD931", base_font = font_google("Inter"), heading_font = font_google("Roboto Mono"),
-                   navbar_bg = "#00AEF6"
-                   ) |> bs_add_rules("
+  navbar_options = navbar_options(position = "fixed-top"),
+  theme = mytheme |> bs_add_rules("
                     h1 { font-family: 'Inter', sans-serif; }
                   "),
+  header = tags$head(tags$style(HTML("body { padding-top: 70px!important;}"))),
   nav_panel(title = "Home",
             h1("Downtown Yonge BIA"),
             card(
@@ -81,7 +79,33 @@ ui <- page_navbar(
   ),
   
   nav_panel("Neighbourhood Profile", 
-            p("Third page content.")),
+            h1("Downtown Yonge BIA"),
+            navset_pill(
+              nav_panel(
+                title = "Business",
+                h3("Business Map"),
+                card(
+                  full_screen = FALSE,
+                  card_body(
+                    class = "p-0",
+                    maplibreOutput("businessMap")
+                  )
+                ),
+              ),
+              nav_panel(
+                title = "Civic Infrastructure"
+              ),
+              nav_panel(
+                title = "Housing"
+              ),
+              nav_panel(
+                title = "Urban Form"
+              ),
+              nav_panel(
+                title = "Neighbourhood Demographics"
+              )
+            )
+  ),
   
   nav_spacer()
 )
