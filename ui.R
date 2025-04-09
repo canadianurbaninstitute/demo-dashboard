@@ -10,7 +10,10 @@ ui <- page_navbar(
     border: 1px solid #494949;
     padding: 0.5em;
     border-radius: 1em;
-    margin-bottom: 1em;}")
+    margin-bottom: 1em;}
+  #legend, .maplibregl-popup-content {background-color: #222!important;}
+  .maplibregl-popup-tip {border-top-color: #222!important;}"
+  )
   )
   ),
   nav_panel(title = "Home",
@@ -22,7 +25,7 @@ ui <- page_navbar(
                 maplibreOutput("map")
               )
             ),
-            h1("Highlights"),
+            h1("2024 Q4 Highlights"),
             layout_columns(
               value_box(
                 title = "Number of Visitors", value = "28,000 (+5%)", ,
@@ -31,10 +34,16 @@ ui <- page_navbar(
                 height = NULL
               ),
               value_box(
-                title = "Number of Visitors", value = "10,000 (-3%)", , theme = "danger",
-                showcase = bsicons::bs_icon("arrow-down"), showcase_layout = "left center",
+                title = "Busiest Day of Week", value = "Tuesday", , theme = "primary",
+                showcase = bsicons::bs_icon("calendar"), showcase_layout = "left center",
                 full_screen = FALSE, fill = TRUE, height = NULL
-              )
+              ),
+              value_box(
+                title = "Busiest Time of Day", value = "12 - 6 PM", , theme = "secondary",
+                showcase = bsicons::bs_icon("clock"), showcase_layout = "left center",
+                full_screen = FALSE, fill = TRUE, height = NULL
+              ),
+              
             )
             
             
@@ -71,13 +80,11 @@ ui <- page_navbar(
                   ),
                   layout_column_wrap(
                     width = 1/2,
-                    
                     card(
                       card_body(
                         plotlyOutput("visitorDoW")
                       )
                     ),
-                    
                     card(
                       card_body(
                         plotlyOutput("visitorToD")
@@ -97,14 +104,38 @@ ui <- page_navbar(
             navset_pill(
               nav_panel(
                 title = "Business",
-                h3("Business Map"),
-                card(
-                  full_screen = FALSE,
-                  card_body(
-                    class = "p-0",
-                    maplibreOutput("businessMap")
+                h3("Business Distribution"),
+                layout_column_wrap(
+                  width = 1/2,
+                  card(
+                    full_screen = FALSE,
+                    card_body(
+                      class = "p-0",
+                      maplibreOutput("businessMap")
+                    )
+                  ),
+                  card(
+                    card_body(
+                      plotlyOutput("businessTypes")
+                    )
                   )
                 ),
+                layout_columns(
+                  value_box(
+                    title = "Number of Businesses", value = "581", ,
+                    theme = "primary", showcase = bsicons::bs_icon("shop"),
+                    showcase_layout = "left center", full_screen = FALSE, fill = TRUE,
+                    height = NULL
+                  ),
+                  value_box(
+                    title = "Independent Business Index", value = "0.54", ,
+                    theme = "warning", showcase = bsicons::bs_icon("speedometer"),
+                    showcase_layout = "left center", full_screen = FALSE, fill = TRUE,
+                    height = NULL
+                  )
+                ),
+                h3("Employment Size"),
+                
               ),
               nav_panel(
                 title = "Civic Infrastructure"

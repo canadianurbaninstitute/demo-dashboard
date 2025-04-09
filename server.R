@@ -2,40 +2,27 @@ server <- function(input, output, session) {
   
   bs_themer()
   
+  # HOME
+  
   output$map <- renderMaplibre({
     maplibre(style = carto_style("dark-matter"),
              center = c(-79.381070, 43.656183),
-             zoom = 14) |> 
+             zoom = 14.5,
+             pitch = 45,
+             bearing = -17) |> 
       add_fill_layer(id = "bia_boundary",
                      source = bia,
                      fill_color = "#00AEF6",
-                     fill_opacity = 0.5)
-  })
-  
-  output$businessMap <- renderMaplibre({
-    maplibre(style = carto_style("dark-matter"),
-             center = c(-79.381070, 43.656183),
-             zoom = 14) |> 
-      add_fill_layer(id = "bia_boundary",
-                     source = bia,
-                     fill_color = "#00AEF6",
-                     fill_opacity = 0.5) |> 
-      add_circle_layer(
-        id = "business-layer",
-        source = ms_businesses,
-        circle_color = match_expr(
-          "Group",
-          values = c("Retail", "Services and Other", "Food and Drink"),
-          stops = c("#F03838", "#00AEF6", "#43B171")
-        ),
-        circle_radius = 6,
-        circle_stroke_color = "#ffffff",
-        circle_stroke_width = 2,
-        circle_opacity = 0.8,
-        tooltip = "Group",
-        hover_options = list(circle_radius = 8)
+                     fill_opacity = 0.5) |>
+      add_categorical_legend(
+        legend_title = "Legend",
+        values = c("Downtown Yonge BIA"),
+        colors = c("#00AEF6"),
+        circular_patches = FALSE,
+        position = "bottom-left",
+        unique_id = "legend"
       )
-  })
+  }) 
   
   
   # Visitors ----
@@ -243,6 +230,73 @@ server <- function(input, output, session) {
   })
   
   
+  # BUSINESS PROFILE
   
+  output$businessMap <- renderMaplibre({
+    maplibre(style = carto_style("dark-matter"),
+             center = c(-79.381070, 43.656183),
+             zoom = 14) |> 
+      add_fill_layer(id = "bia_boundary",
+                     source = bia,
+                     fill_color = "#00AEF6",
+                     fill_opacity = 0.5) |> 
+      add_circle_layer(
+        id = "business-layer",
+        source = ms_businesses,
+        circle_color = match_expr(
+          "Group",
+          values = c("Retail", "Services and Other", "Food and Drink"),
+          stops = c("#F03838", "#00AEF6", "#43B171")
+        ),
+        circle_radius = 6.0,
+        circle_stroke_color = "#ffffff",
+        circle_stroke_width = 2,
+        circle_opacity = 0.8,
+        tooltip = "Group",
+        hover_options = list(circle_radius = 8)
+      ) |>
+      add_categorical_legend(
+        legend_title = "Business Types",
+        values = c("Retail", "Services and Other", "Food and Drink"),
+        colors = c("#F03838", "#00AEF6", "#43B171"),
+        circular_patches = TRUE,
+        position = "bottom-left",
+        unique_id = "legend"
+      )
+  })
+  
+  color_mapping <- c("Retail" = "#F03838", "Services and Other" = "#00AEF6", "Food and Drink" = "#43B171")
+  
+  
+  output$businessTypes <- renderPlotly({
+      # Create the plot with a single x value for all bars to stack them
+      plot_ly(
+        data = business_types,
+        x = rep("Business Types", nrow(business_types)),  # Single x value for all
+        y = ~count,
+        type = "bar",
+        color = ~business,
+        colors = color_mapping,
+        text = ~paste(business, ":", count),
+        hoverinfo = "text"
+      ) %>%
+        layout(
+          barmode = "stack",
+          paper_bgcolor = 'rgba(0,0,0,0)',
+          plot_bgcolor = 'rgba(0,0,0,0)',
+          font = list(color = "#fff", family = "Inter"),
+          legend = list(
+            font = list(size = 12),
+            title = "",
+            orientation = "h",
+            x = 0.5, xanchor = "center",
+            y = -0.2, yanchor = "top"
+          ),
+          yaxis = list(title="", fixedrange = TRUE, gridcolor = "#4f4f4f", showline = TRUE, linewidth = 1, linecolor = '#4f4f4f', mirror = TRUE),
+          xaxis = list(title="", gridcolor = "#4f4f4f", showline = TRUE, linewidth = 1, linecolor = '#4f4f4f', mirror = TRUE)
+        ) %>%
+        config(displayModeBar = FALSE)
+      
+    })
 }
 
