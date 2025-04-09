@@ -1,10 +1,18 @@
 ui <- page_navbar(
   title = "Dashboard Demo",
-  navbar_options = navbar_options(position = "fixed-top"),
+  navbar_options = navbar_options(position = "fixed-top", underline = FALSE),
   theme = mytheme |> bs_add_rules("
                     h1 { font-family: 'Inter', sans-serif; }
                   "),
-  header = tags$head(tags$style(HTML("body { padding-top: 70px!important;}"))),
+  header = tags$head(tags$style(HTML(
+  "body { padding-top: 70px!important;} 
+  .nav-pills {
+    border: 1px solid #494949;
+    padding: 0.5em;
+    border-radius: 1em;
+    margin-bottom: 1em;}")
+  )
+  ),
   nav_panel(title = "Home",
             h1("Downtown Yonge BIA"),
             card(
@@ -61,11 +69,17 @@ ui <- page_navbar(
                   card(
                     card_body(plotlyOutput("visitorTypes"))
                   ),
-                  card(
-                    card_body(
-                      layout_column_wrap(
-                        width = 1/2,
-                        plotlyOutput("visitorDoW"),
+                  layout_column_wrap(
+                    width = 1/2,
+                    
+                    card(
+                      card_body(
+                        plotlyOutput("visitorDoW")
+                      )
+                    ),
+                    
+                    card(
+                      card_body(
                         plotlyOutput("visitorToD")
                       )
                     )
