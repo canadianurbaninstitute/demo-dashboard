@@ -24,6 +24,19 @@ server <- function(input, output, session) {
       )
   }) 
   
+  output$map1 <- renderMaplibre({
+    maplibre(style = carto_style("dark-matter"),
+             center = c(-79.381070, 43.656183),
+             zoom = 11,
+             bearing = -17) |> 
+      add_fill_layer(id = "bia_boundary",
+                     source = bia,
+                     fill_color = "#00AEF6",
+                     fill_opacity = 0.5)
+  }) 
+  
+  
+  
   
   # Visitors ----
   
@@ -81,6 +94,36 @@ server <- function(input, output, session) {
         xaxis = list(gridcolor = "#4f4f4f", showline=TRUE, linewidth=1, linecolor='#4f4f4f',mirror=TRUE)
       )
   })
+  
+  output$visitorLevels2 <- renderEcharts4r({
+    req(visitorLevelsData())
+    visitorLevelsData() %>%
+      dplyr::mutate(Date = as.Date(Date)) %>%
+      dplyr::arrange(Date) %>%
+      e_charts(Date) %>%
+      e_line(serie = Count, name = "Visits", symbol = "circle", symbol_size = 8,
+             lineStyle = list(width = 2, color = "#00AEF6"),
+             itemStyle = list(color = "#00AEF6")) %>%
+      e_x_axis(
+        type = "time",
+        min = "2021-01-01",
+        max = "2025-01-01",
+        axisLine = list(lineStyle = list(color = "#4f4f4f")),
+        axisLabel = list(color = "#ffffff")
+      ) %>%
+      e_y_axis(
+        name = "Visits",
+        max = "10000000",
+        axisLine = list(lineStyle = list(color = "#4f4f4f")),
+        splitLine = list(lineStyle = list(color = "#4f4f4f"))
+      ) %>%
+      e_tooltip(trigger = "axis") %>%
+      e_text_style(color = "#ffffff", fontFamily = "Inter") %>%
+      e_legend(show = FALSE)
+  })
+  
+  
+  
   
   
   # Visitor Types Reactivity
@@ -248,9 +291,9 @@ server <- function(input, output, session) {
           values = c("Retail", "Services and Other", "Food and Drink"),
           stops = c("#F03838", "#00AEF6", "#43B171")
         ),
-        circle_radius = 6.0,
+        circle_radius = 4,
         circle_stroke_color = "#ffffff",
-        circle_stroke_width = 2,
+        circle_stroke_width = 1,
         circle_opacity = 0.8,
         tooltip = "Group",
         hover_options = list(circle_radius = 8)
@@ -265,7 +308,7 @@ server <- function(input, output, session) {
       )
   })
   
-  color_mapping <- c("Retail" = "#F03838", "Services and Other" = "#00AEF6", "Food and Drink" = "#43B171")
+  color_mapping_business <- c("Retail" = "#F03838", "Services and Other" = "#00AEF6", "Food and Drink" = "#43B171")
   
   
   output$businessTypes <- renderPlotly({
@@ -275,9 +318,9 @@ server <- function(input, output, session) {
         x = rep("Business Types", nrow(business_types)),  # Single x value for all
         y = ~count,
         type = "bar",
-        color = ~business,
-        colors = color_mapping,
-        text = ~paste(business, ":", count),
+        color = ~group,
+        colors = color_mapping_business,
+        text = ~paste(group, ":", count),
         hoverinfo = "text"
       ) %>%
         layout(
@@ -296,7 +339,72 @@ server <- function(input, output, session) {
           xaxis = list(title="", gridcolor = "#4f4f4f", showline = TRUE, linewidth = 1, linecolor = '#4f4f4f', mirror = TRUE)
         ) %>%
         config(displayModeBar = FALSE)
-      
     })
+  
+  color_mapping_civic <- c("Arts and Culture" = "#DB3069", "Education" = "#F45D09", "Government and Community Services" = "#8A4285", "Recreation Facilities" = "#43B171", "Healthcare" = "#00AEF6")
+  
+  
+  output$civicMap <- renderMaplibre({
+    maplibre(style = carto_style("dark-matter"),
+             center = c(-79.381070, 43.656183),
+             zoom = 14) |> 
+      add_fill_layer(id = "bia_boundary",
+                     source = bia,
+                     fill_color = "#00AEF6",
+                     fill_opacity = 0.5) |> 
+      add_circle_layer(
+        id = "civic-layer",
+        source = civic_geo,
+        circle_color = match_expr(
+          "Group",
+          values = c(  "Arts and Culture", "Education", "Government and Community Services", "Recreation Facilities", "Healthcare"),
+          stops = c("#DB3069", "#F45D09", "#8A4285", "#43B171","#00AEF6")
+        ),
+        circle_radius = 4,
+        circle_stroke_color = "#ffffff",
+        circle_stroke_width = 1,
+        circle_opacity = 0.8,
+        tooltip = "Group",
+        hover_options = list(circle_radius = 8)
+      ) |>
+      add_categorical_legend(
+        legend_title = "Civic Infrastructure  Types",
+        values = c(  "Arts and Culture", "Education", "Government and Community Services", "Recreation Facilities", "Healthcare"),
+        colors = c("#DB3069", "#F45D09", "#8A4285", "#43B171","#00AEF6"),
+        circular_patches = TRUE,
+        position = "bottom-left",
+        unique_id = "legend"
+      )
+  })
+  
+  output$civicTypes <- renderPlotly({
+    # Create the plot with a single x value for all bars to stack them
+    plot_ly(
+      data = civic_types,
+      x = rep("Civic Types", nrow(civic_types)),  # Single x value for all
+      y = ~count,
+      type = "bar",
+      color = ~group,
+      colors = color_mapping_civic,
+      text = ~paste(group, ":", count),
+      hoverinfo = "text"
+    ) %>%
+      layout(
+        barmode = "stack",
+        paper_bgcolor = 'rgba(0,0,0,0)',
+        plot_bgcolor = 'rgba(0,0,0,0)',
+        font = list(color = "#fff", family = "Inter"),
+        legend = list(
+          font = list(size = 12),
+          title = "",
+          orientation = "h",
+          x = 0.5, xanchor = "center",
+          y = -0.2, yanchor = "top"
+        ),
+        yaxis = list(title="", fixedrange = TRUE, gridcolor = "#4f4f4f", showline = TRUE, linewidth = 1, linecolor = '#4f4f4f', mirror = TRUE),
+        xaxis = list(title="", gridcolor = "#4f4f4f", showline = TRUE, linewidth = 1, linecolor = '#4f4f4f', mirror = TRUE)
+      ) %>%
+      config(displayModeBar = FALSE)
+  })
 }
 

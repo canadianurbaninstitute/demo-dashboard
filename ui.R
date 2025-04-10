@@ -18,14 +18,24 @@ ui <- page_navbar(
   ),
   nav_panel(title = "Home",
             h1("Downtown Yonge BIA"),
-            card(
-              full_screen = FALSE,
-              card_body(
-                class = "p-0",
-                maplibreOutput("map")
+            layout_column_wrap(
+              width = 1/2,
+              card(
+                full_screen = FALSE,
+                card_body(
+                  class = "p-0",
+                  maplibreOutput("map")
+                )
+              ),
+              card(
+                full_screen = FALSE,
+                card_body(
+                  class = "p-0",
+                  maplibreOutput("map1")
+                )
               )
             ),
-            h1("2024 Q4 Highlights"),
+            h2("2024 Q4 Highlights"),
             layout_columns(
               value_box(
                 title = "Number of Visitors", value = "28,000 (+5%)", ,
@@ -76,6 +86,10 @@ ui <- page_navbar(
                     card_body(plotlyOutput("visitorLevels"))
                   ),
                   card(
+                    card_title("Monthly Visits since 2021"),
+                    card_body(echarts4rOutput("visitorLevels2"))
+                  ),
+                  card(
                     card_body(plotlyOutput("visitorTypes"))
                   ),
                   layout_column_wrap(
@@ -122,23 +136,51 @@ ui <- page_navbar(
                 ),
                 layout_columns(
                   value_box(
-                    title = "Number of Businesses", value = "581", ,
+                    title = "Number of Businesses", value = "581",
                     theme = "primary", showcase = bsicons::bs_icon("shop"),
                     showcase_layout = "left center", full_screen = FALSE, fill = TRUE,
                     height = NULL
                   ),
                   value_box(
-                    title = "Independent Business Index", value = "0.54", ,
+                    title = "Independent Business Index", value = "0.54",
                     theme = "warning", showcase = bsicons::bs_icon("speedometer"),
                     showcase_layout = "left center", full_screen = FALSE, fill = TRUE,
                     height = NULL
                   )
-                ),
-                h3("Employment Size"),
-                
+                )
               ),
               nav_panel(
-                title = "Civic Infrastructure"
+                title = "Civic Infrastructure",
+                h3("Civic Infrastructure Distribution"),
+                layout_column_wrap(
+                  width = 1/2,
+                  card(
+                    full_screen = FALSE,
+                    card_body(
+                      class = "p-0",
+                      maplibreOutput("civicMap")
+                    )
+                  ),
+                  card(
+                    card_body(
+                      plotlyOutput("civicTypes")
+                    )
+                  )
+                ),
+                layout_columns(
+                  value_box(
+                    title = "Number of Civic Infrastructure Locations", value = "176",
+                    theme = "primary", showcase = bsicons::bs_icon("building"),
+                    showcase_layout = "left center", full_screen = FALSE, fill = TRUE,
+                    height = NULL
+                  ),
+                  value_box(
+                    title = "Complete Community Score", value = "75",
+                    theme = "success", showcase = bsicons::bs_icon("speedometer"),
+                    showcase_layout = "left center", full_screen = FALSE, fill = TRUE,
+                    height = NULL
+                  )
+                )
               ),
               nav_panel(
                 title = "Housing"

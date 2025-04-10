@@ -4,6 +4,7 @@ library(plotly)
 library(mapgl)
 library(tidyverse)
 library(sf)
+library(echarts4r)
 
 # load in the necessary data
 
@@ -31,6 +32,12 @@ mytheme <- bs_theme(preset="bootstrap", version = "5", bg = "#222", fg = "#fff",
                   primary = "#00AEF6", secondary = "#002940", success = "#43B171", danger = "#F03838",
                   warning = "#FFD931", base_font = font_google("Inter"), heading_font = font_google("Roboto Mono"),
                   navbar_bg = "#00AEF6")
+
+# Civic Data
+
+civic_types <- read_csv("./data/civic_types.csv")
+
+civic_geo <- st_read("./data/civic.geojson")
 
 
 

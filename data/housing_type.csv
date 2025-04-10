@@ -1,0 +1,13 @@
+Area,Housing Type,Percentage
+Downtown Yonge,Single-Detached,0.0801
+Downtown Yonge,Semi-Detached,0.089
+Downtown Yonge,Row,0.5826
+Downtown Yonge,High-rise Apartment,97.9452
+Downtown Yonge,Low-rise Apartment,1.2009
+Downtown Yonge,Duplex,0.1023
+Toronto CMA,Single-Detached,38.9745
+Toronto CMA,Semi-Detached,7.2539
+Toronto CMA,Row,9.2935
+Toronto CMA,High-rise Apartment,31.0647
+Toronto CMA,Low-rise Apartment,9.4514
+Toronto CMA,Duplex,3.962
