@@ -176,6 +176,7 @@ server <- function(input, output, session) {
       )
   })
   
+  
   # Visitor Day of Week Reactivity
   vistorDayData = reactive({
     visitorDayFiltered = ff_day_of_week %>%
@@ -309,7 +310,7 @@ server <- function(input, output, session) {
   })
   
   color_mapping_business <- c("Retail" = "#F03838", "Services and Other" = "#00AEF6", "Food and Drink" = "#43B171")
-  
+
   
   output$businessTypes <- renderPlotly({
       # Create the plot with a single x value for all bars to stack them
@@ -341,6 +342,53 @@ server <- function(input, output, session) {
         config(displayModeBar = FALSE)
     })
   
+
+  output$businessTypes2 <- renderEcharts4r({
+    
+    # Pivot the data to widen format
+    business_types_wide <- business_types %>% 
+      pivot_wider(names_from = group, values_from = count) %>%
+      # Create a single x-axis category for stacking:
+      mutate(`Business Types` = "Business Types")
+    
+    # Build the echarts4r plot
+    business_types_wide %>%
+      e_charts(`Business Types`) %>% 
+      # Add a bar series for each group, specifying the same stack value to stack them
+      e_bar(Retail, stack = "stack", name = "Retail") %>%
+      e_bar(`Food and Drink`, stack = "stack", name = "Food and Drink") %>%
+      e_bar(`Services and Other`, stack = "stack", name = "Services and Other") %>%
+      # Configure the tooltip to display group and count
+      e_tooltip(
+        trigger = "item",
+        formatter = htmlwidgets::JS("
+          function(params) {
+            return(params.seriesName + ': ' + params.value);
+          }
+        ")
+      ) %>%
+      # Customize the legend style and position
+      e_legend(
+        orient = "horizontal", 
+        left = "center", 
+        bottom = 0, 
+        textStyle = list(color = "#fff", fontSize = 12)
+      ) %>%
+      # Customize the y-axis (grid lines and axis line)
+      e_y_axis(
+        splitLine = list(lineStyle = list(color = "#4f4f4f")),
+        axisLine = list(lineStyle = list(color = "#4f4f4f"))
+      ) %>%
+      # Customize the x-axis (axis line)
+      e_x_axis(
+        axisLine = list(lineStyle = list(color = "#4f4f4f"))
+      ) %>%
+      # Apply your custom color mapping
+      e_color(c("#F03838", "#43B171", "#00AEF6")) %>%
+      e_text_style(color = "#ffffff", fontFamily = "Inter")
+  })
+  
+  
   color_mapping_civic <- c("Arts and Culture" = "#DB3069", "Education" = "#F45D09", "Government and Community Services" = "#8A4285", "Recreation Facilities" = "#43B171", "Healthcare" = "#00AEF6")
   
   
@@ -357,19 +405,19 @@ server <- function(input, output, session) {
         source = civic_geo,
         circle_color = match_expr(
           "Group",
-          values = c(  "Arts and Culture", "Education", "Government and Community Services", "Recreation Facilities", "Healthcare"),
+          values = c("Arts and Culture", "Education", "Government and Community Services", "Recreation Facilities", "Health and Care Facilities"),
           stops = c("#DB3069", "#F45D09", "#8A4285", "#43B171","#00AEF6")
         ),
         circle_radius = 4,
         circle_stroke_color = "#ffffff",
         circle_stroke_width = 1,
-        circle_opacity = 0.8,
+        circle_opacity = 1,
         tooltip = "Group",
         hover_options = list(circle_radius = 8)
       ) |>
       add_categorical_legend(
         legend_title = "Civic Infrastructure  Types",
-        values = c(  "Arts and Culture", "Education", "Government and Community Services", "Recreation Facilities", "Healthcare"),
+        values = c(  "Arts and Culture", "Education", "Government and Community Services", "Recreation Facilities", "Health and Care Facilities"),
         colors = c("#DB3069", "#F45D09", "#8A4285", "#43B171","#00AEF6"),
         circular_patches = TRUE,
         position = "bottom-left",

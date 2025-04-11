@@ -1,5 +1,5 @@
 ui <- page_navbar(
-  title = "Dashboard Demo",
+  title = "Downtown Yonge BIA Dashboard Demo",
   navbar_options = navbar_options(position = "fixed-top", underline = FALSE),
   theme = mytheme |> bs_add_rules("
                     h1 { font-family: 'Inter', sans-serif; }
@@ -16,6 +16,9 @@ ui <- page_navbar(
   )
   )
   ),
+  
+  # MOVE THIS INTO EXTERNAL CSS ^
+  
   nav_panel(title = "Home",
             h1("Downtown Yonge BIA"),
             layout_column_wrap(
@@ -82,9 +85,9 @@ ui <- page_navbar(
                       selectize = TRUE
                     )
                   ),
-                  card(
-                    card_body(plotlyOutput("visitorLevels"))
-                  ),
+                  # card(
+                  #  card_body(plotlyOutput("visitorLevels"))
+                  # ),
                   card(
                     card_title("Monthly Visits since 2021"),
                     card_body(echarts4rOutput("visitorLevels2"))
@@ -130,7 +133,7 @@ ui <- page_navbar(
                   ),
                   card(
                     card_body(
-                      plotlyOutput("businessTypes")
+                      echarts4rOutput("businessTypes2")
                     )
                   )
                 ),
