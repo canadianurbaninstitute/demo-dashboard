@@ -82,7 +82,7 @@ server <- function(input, output, session) {
       mutate(Percentage = round(Percentage, 2))
   })
   
-  output$visitorLevels2 <- renderEcharts4r({
+  output$visitorLevels <- renderEcharts4r({
     req(visitorLevelsData())
     visitorLevelsData() %>%
       dplyr::mutate(Date = as.Date(Date)) %>%
@@ -297,9 +297,47 @@ server <- function(input, output, session) {
       )
   })
   
+  
+  output$employmentSize <- renderMaplibre({
+    maplibre(style = carto_style("dark-matter"),
+             center = c(-79.381070, 43.656183),
+             zoom = 14) |> 
+      add_fill_layer(id = "bia_boundary",
+                     source = bia,
+                     fill_color = "#00AEF6",
+                     fill_opacity = 0.5) |> 
+      add_circle_layer(
+        id = "business-layer",
+        source = ms_businesses,
+        circle_color = match_expr(
+          "Group",
+          values = c("Retail", "Services and Other", "Food and Drink"),
+          stops = c("#F03838", "#00AEF6", "#43B171")
+        ),
+        circle_radius = step_expr(
+          "EmpSzNm",
+          values = c(0, 5, 10, 50, 100, 1000),
+          stops = c(2, 4, 6, 8, 10, 12),
+          base = 1 # Adjust sizes as needed
+        ),
+        circle_stroke_color = "#ffffff",
+        circle_stroke_width = 1,
+        circle_opacity = 0.8,
+        tooltip = "Group",
+      ) |>
+      add_categorical_legend(
+        legend_title = "Business Types",
+        values = c("Retail", "Services and Other", "Food and Drink"),
+        colors = c("#F03838", "#00AEF6", "#43B171"),
+        circular_patches = TRUE,
+        position = "bottom-left",
+        unique_id = "legend"
+      )
+  })
+  
 
   
-  output$businessTypes2 <- renderEcharts4r({
+  output$businessTypes <- renderEcharts4r({
     business_types |>
       e_charts(group) |>
       e_pie(count, 
@@ -319,8 +357,6 @@ server <- function(input, output, session) {
       e_text_style(color = "#ffffff", fontFamily = "Inter") |>
       e_color(c("#F03838", "#43B171", "#00AEF6"))
   })
-
-  
   
   
   output$civicMap <- renderMaplibre({
@@ -357,7 +393,7 @@ server <- function(input, output, session) {
   })
 
   
-  output$civicTypes2 <- renderEcharts4r({
+  output$civicTypes <- renderEcharts4r({
     civic_types |>
       e_charts(group) |>
       e_pie(count, 
