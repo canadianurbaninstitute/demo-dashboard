@@ -52,8 +52,12 @@ civic_geo = st_read("./data/civic.geojson")
 
 housing_construction = read_csv("./data/housing_construction.csv")
 
-
 housing_type = read_csv("./data/housing_type.csv")
+
+# Urban Form Data
+
+commute = read_csv("./data/commute.csv")
+
 
 # Demographic Data
 

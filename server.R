@@ -10,6 +10,29 @@ server <- function(input, output, session) {
              zoom = 14.5,
              pitch = 45,
              bearing = -17) |> 
+      add_vector_source(
+        id = "openmaptiles",
+        url = paste0("https://api.maptiler.com/tiles/v3-openmaptiles/tiles.json?key=y86lJ4kguNAzUQsF9r0N")
+      ) |>
+      add_fill_extrusion_layer(
+        id = "3d-buildings",
+        source = 'openmaptiles',
+        source_layer = 'building',
+        fill_extrusion_color = interpolate(
+          column = 'render_height',
+          values = c(0, 200, 400),
+          stops = c('#222', '#444', '#666')
+        ),
+        fill_extrusion_height = list(
+          'interpolate',
+          list('linear'),
+          list('zoom'),
+          14,
+          0,
+          15,
+          list('get', 'render_height')
+        )
+      ) |>
       add_fill_layer(id = "bia_boundary",
                      source = bia,
                      fill_color = "#00AEF6",
@@ -21,7 +44,7 @@ server <- function(input, output, session) {
         circular_patches = FALSE,
         position = "bottom-left",
         unique_id = "legend"
-      )
+      ) 
   }) 
   
   output$map1 <- renderMaplibre({
@@ -57,42 +80,6 @@ server <- function(input, output, session) {
     visitorLevelsFiltered = ff_overall %>%
       dplyr::filter(Date < target_end_date) %>%
       mutate(Percentage = round(Percentage, 2))
-  })
-  
-  
-  # Visitor Levels Chart
-  output$visitorLevels = renderPlotly({
-    # generate the plot
-    plotOverallVisits = ggplot(visitorLevelsData(), aes(x = Date, y = Count)) +
-      geom_line(size = 1, color = "#00AEF6") +
-      geom_point(size = 2, color = "#00AEF6") +
-      scale_x_date(
-        date_breaks = "3 months",
-        date_labels = "%b %y",
-        limits = c(ymd("2021-01-01"), ymd("2025-01-01")),
-      ) +
-      scale_y_continuous(labels = scales::comma_format(scale = 1e-3)) +
-      labs(title = "Monthly Visits since 2021", x = "Date", y = "Visits (Thousands)") +
-      theme(
-        panel.background = element_rect(fill = "transparent", color = NA),
-        plot.background = element_rect(fill = "transparent", color = NA),
-        legend.background = element_rect(fill = "transparent", color = NA),
-        text = element_text(color = "#fff"),  # match fg
-        axis.text = element_text(color = "#fff"),
-        axis.title = element_text(color = "#fff")
-      )
-    
-    # convert into a plotly
-    ggplotly(plotOverallVisits) %>%
-      config(displayModeBar = FALSE) %>%
-      layout(
-        paper_bgcolor = 'rgba(0,0,0,0)',
-        plot_bgcolor = 'rgba(0,0,0,0)',
-        font = list(color = "#fff", family = "Inter"),
-        title = list(font = list(family = "Roboto Mono", color = "#fff")),
-        yaxis = list(fixedrange = TRUE, gridcolor = "#4f4f4f", showline=TRUE, linewidth=1, linecolor='#4f4f4f',mirror=TRUE),
-        xaxis = list(gridcolor = "#4f4f4f", showline=TRUE, linewidth=1, linecolor='#4f4f4f',mirror=TRUE)
-      )
   })
   
   output$visitorLevels2 <- renderEcharts4r({
@@ -483,6 +470,112 @@ server <- function(input, output, session) {
       e_text_style(color = "#ffffff", fontFamily = "Inter") %>%
       e_toolbox_feature(feature = "saveAsImage")
   })
+  
+  
+  ### URBAN FORM
+  
+  output$urbanFormMap <- renderMaplibre({
+    maplibre(style = carto_style("dark-matter"),
+             center = c(-79.381070, 43.656183),
+             zoom = 14.5,
+             pitch = 45,
+             bearing = -17) |> 
+      add_vector_source(
+        id = "openmaptiles",
+        url = paste0("https://api.maptiler.com/tiles/v3-openmaptiles/tiles.json?key=y86lJ4kguNAzUQsF9r0N")
+      ) |>
+      add_fill_extrusion_layer(
+        id = "3d-buildings",
+        source = 'openmaptiles',
+        source_layer = 'building',
+        fill_extrusion_color = interpolate(
+          column = 'render_height',
+          values = c(0, 200, 400),
+          stops = c('#222', '#444', '#666')
+        ),
+        fill_extrusion_height = list(
+          'interpolate',
+          list('linear'),
+          list('zoom'),
+          14,
+          0,
+          15,
+          list('get', 'render_height')
+        )
+      ) |>
+      add_line_layer(
+        id = "transit",
+        source = 'openmaptiles',
+        source_layer = 'transportation',
+        filter = list("in", "subclass", "tram", "subway", "rail"),
+        line_color = "#F03838",
+        line_opacity = 0.7
+      ) |>
+      add_fill_layer(
+        id = "greenspace",
+        source = "openmaptiles",
+        source_layer = "landcover",
+        fill_color = "#43B171",
+        fill_opacity = 0.5,
+        filter = list("==", "class", "grass")
+      ) |>
+      add_fill_layer(id = "bia_boundary",
+                     source = bia,
+                     fill_color = "#00AEF6",
+                     fill_opacity = 0.5) |>
+      add_categorical_legend(
+        legend_title = "Legend",
+        values = c("Downtown Yonge BIA", "Transit", "Green Space"),
+        colors = c("#00AEF6", "#F03838", "#43B171"),
+        circular_patches = FALSE,
+        position = "bottom-left",
+        unique_id = "legend"
+      ) 
+  }) 
+  
+  output$commuteMode <- renderEcharts4r({
+    
+    # Prepare the data
+    downtown_data <- commute %>%
+      filter(Area == "Downtown Yonge") %>%
+      rename(Downtown_Yonge = weighted_mean)
+    
+    toronto_data <- commute %>%
+      filter(Area == "Toronto CMA") %>%
+      rename(Toronto_CMA = weighted_mean)
+    
+    # Merge for grouped format
+    plot_data <- downtown_data %>%
+      select(variable, Downtown_Yonge) %>%
+      left_join(
+        toronto_data %>% select(variable, Toronto_CMA),
+        by = "variable"
+      )
+    
+    # Create the chart
+    plot_data %>%
+      e_charts(variable) %>%
+      e_bar(Downtown_Yonge, name = "Downtown Yonge",
+            itemStyle = list(color = "#00AEF6")) %>%
+      e_bar(Toronto_CMA, name = "Toronto CMA",
+            itemStyle = list(color = "#002A41")) %>%
+      e_tooltip(
+        trigger = "axis"
+      ) %>%
+      e_title("Commute Mode by Area", textStyle = list(color = "#fff")) %>%
+      e_y_axis(name = "Percentage (%)",
+               axisLine = list(lineStyle = list(color = "#4f4f4f")),
+               splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_x_axis(name = "Commute Mode",
+               axisLine = list(lineStyle = list(color = "#4f4f4f")),
+               splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_legend(orient = "horizontal", left = "left", bottom = 0,
+               textStyle = list(color = "#fff", fontSize = 12)) %>%
+      e_grid(containLabel = TRUE) %>%
+      e_text_style(color = "#ffffff", fontFamily = "Inter") %>%
+      e_toolbox_feature(feature = "saveAsImage")
+  })
+  
   
   
 }

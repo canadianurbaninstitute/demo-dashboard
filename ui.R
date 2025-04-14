@@ -156,7 +156,7 @@ ui <- page_navbar(
                 ),
                 layout_columns(
                   value_box(
-                    title = "Number of Businesses", value = "581",
+                    title = "Number of Main Street Businesses", value = "581",
                     theme = "primary", showcase = bsicons::bs_icon("shop"),
                     showcase_layout = "left center", full_screen = FALSE, fill = TRUE,
                     height = NULL
@@ -217,7 +217,21 @@ ui <- page_navbar(
                   )
               ),
               nav_panel(
-                title = "Urban Form"
+                title = "Urban Form",
+                h3("Urban Form Map"),
+                card(
+                  full_screen = FALSE,
+                  card_body(
+                    class = "p-0",
+                    maplibreOutput("urbanFormMap")
+                  )
+                ),
+                h3("Commute"),
+                card(
+                  card_body(
+                    echarts4rOutput("commuteMode")
+                  )
+                )
               ),
               nav_panel(
                 title = "Neighbourhood Demographics",
