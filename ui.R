@@ -85,19 +85,16 @@ ui <- page_navbar(
                       selected = "Q4",
                       selectize = TRUE
                     )
-                  ),          
-                  # card(
-                  #  card_body(plotlyOutput("visitorLevels"))
-                  # ),
+                  ),
                   card(
                     card_title("Monthly Visits since 2021"),
                     card_body(
                       p("This chart measures the number of pedestrian visits to the BIA on a monthly basis from 2021."),
-                      echarts4rOutput("visitorLevels2")
+                      echarts4rOutput("visitorLevels")
                       )
                   ),
                   card(
-                    card_body(plotlyOutput("visitorTypes"))
+                    card_body(echarts4rOutput("visitorTypes"))
                   ),
                   layout_column_wrap(
                     width = 1/2,
