@@ -6,6 +6,8 @@ library(tidyverse)
 library(sf)
 library(echarts4r)
 
+
+
 # load in the necessary data
 
 # visitor level data
@@ -20,6 +22,7 @@ ff_type = read_csv("./data/ff_vis_type.csv") %>%
 
 # BIA
 
+name <- "Downtown Yonge BIA"
 bia <- st_read("./data/downtown_yonge.geojson")
 
 # Business Data
@@ -38,6 +41,14 @@ mytheme <- bs_theme(preset="bootstrap", version = "5", bg = "#222", fg = "#fff",
 civic_types <- read_csv("./data/civic_types.csv")
 
 civic_geo <- st_read("./data/civic.geojson")
+
+
+# Housing Data
+
+housing_construction <- read_csv("./data/housing_construction.csv")
+
+
+housing_type <- read_csv("./data/housing_type.csv")
 
 
 

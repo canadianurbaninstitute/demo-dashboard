@@ -274,6 +274,7 @@ server <- function(input, output, session) {
   })
   
   
+  
   # BUSINESS PROFILE
   
   output$businessMap <- renderMaplibre({
@@ -309,87 +310,30 @@ server <- function(input, output, session) {
       )
   })
   
-  color_mapping_business <- c("Retail" = "#F03838", "Services and Other" = "#00AEF6", "Food and Drink" = "#43B171")
 
   
-  output$businessTypes <- renderPlotly({
-      # Create the plot with a single x value for all bars to stack them
-      plot_ly(
-        data = business_types,
-        x = rep("Business Types", nrow(business_types)),  # Single x value for all
-        y = ~count,
-        type = "bar",
-        color = ~group,
-        colors = color_mapping_business,
-        text = ~paste(group, ":", count),
-        hoverinfo = "text"
-      ) %>%
-        layout(
-          barmode = "stack",
-          paper_bgcolor = 'rgba(0,0,0,0)',
-          plot_bgcolor = 'rgba(0,0,0,0)',
-          font = list(color = "#fff", family = "Inter"),
-          legend = list(
-            font = list(size = 12),
-            title = "",
-            orientation = "h",
-            x = 0.5, xanchor = "center",
-            y = -0.2, yanchor = "top"
-          ),
-          yaxis = list(title="", fixedrange = TRUE, gridcolor = "#4f4f4f", showline = TRUE, linewidth = 1, linecolor = '#4f4f4f', mirror = TRUE),
-          xaxis = list(title="", gridcolor = "#4f4f4f", showline = TRUE, linewidth = 1, linecolor = '#4f4f4f', mirror = TRUE)
-        ) %>%
-        config(displayModeBar = FALSE)
-    })
-  
-
   output$businessTypes2 <- renderEcharts4r({
-    
-    # Pivot the data to widen format
-    business_types_wide <- business_types %>% 
-      pivot_wider(names_from = group, values_from = count) %>%
-      # Create a single x-axis category for stacking:
-      mutate(`Business Types` = "Business Types")
-    
-    # Build the echarts4r plot
-    business_types_wide %>%
-      e_charts(`Business Types`) %>% 
-      # Add a bar series for each group, specifying the same stack value to stack them
-      e_bar(Retail, stack = "stack", name = "Retail") %>%
-      e_bar(`Food and Drink`, stack = "stack", name = "Food and Drink") %>%
-      e_bar(`Services and Other`, stack = "stack", name = "Services and Other") %>%
-      # Configure the tooltip to display group and count
+    business_types |>
+      e_charts(group) |>
+      e_pie(count, 
+            radius = c("30%", "70%"),
+            label = list(show = FALSE),
+            labelLine = list(show = FALSE)) |>
+      e_title("Main Street Business Types", left = "center", textStyle = list(color = "#fff")) |>
       e_tooltip(
         trigger = "item",
-        formatter = htmlwidgets::JS("
-          function(params) {
-            return(params.seriesName + ': ' + params.value);
-          }
-        ")
-      ) %>%
-      # Customize the legend style and position
+        formatter = htmlwidgets::JS("function(params){ return params.name + ': ' + params.value; }")
+      ) |>
       e_legend(
-        orient = "horizontal", 
-        left = "center", 
+        orient = "vertical", 
+        left = "left", 
         bottom = 0, 
-        textStyle = list(color = "#fff", fontSize = 12)
-      ) %>%
-      # Customize the y-axis (grid lines and axis line)
-      e_y_axis(
-        splitLine = list(lineStyle = list(color = "#4f4f4f")),
-        axisLine = list(lineStyle = list(color = "#4f4f4f"))
-      ) %>%
-      # Customize the x-axis (axis line)
-      e_x_axis(
-        axisLine = list(lineStyle = list(color = "#4f4f4f"))
-      ) %>%
-      # Apply your custom color mapping
-      e_color(c("#F03838", "#43B171", "#00AEF6")) %>%
-      e_text_style(color = "#ffffff", fontFamily = "Inter")
+        textStyle = list(color = "#fff", fontSize = 12)) |>
+      e_text_style(color = "#ffffff", fontFamily = "Inter") |>
+      e_color(c("#F03838", "#43B171", "#00AEF6"))
   })
+
   
-  
-  color_mapping_civic <- c("Arts and Culture" = "#DB3069", "Education" = "#F45D09", "Government and Community Services" = "#8A4285", "Recreation Facilities" = "#43B171", "Healthcare" = "#00AEF6")
   
   
   output$civicMap <- renderMaplibre({
@@ -424,35 +368,122 @@ server <- function(input, output, session) {
         unique_id = "legend"
       )
   })
+
   
-  output$civicTypes <- renderPlotly({
-    # Create the plot with a single x value for all bars to stack them
-    plot_ly(
-      data = civic_types,
-      x = rep("Civic Types", nrow(civic_types)),  # Single x value for all
-      y = ~count,
-      type = "bar",
-      color = ~group,
-      colors = color_mapping_civic,
-      text = ~paste(group, ":", count),
-      hoverinfo = "text"
-    ) %>%
-      layout(
-        barmode = "stack",
-        paper_bgcolor = 'rgba(0,0,0,0)',
-        plot_bgcolor = 'rgba(0,0,0,0)',
-        font = list(color = "#fff", family = "Inter"),
-        legend = list(
-          font = list(size = 12),
-          title = "",
-          orientation = "h",
-          x = 0.5, xanchor = "center",
-          y = -0.2, yanchor = "top"
-        ),
-        yaxis = list(title="", fixedrange = TRUE, gridcolor = "#4f4f4f", showline = TRUE, linewidth = 1, linecolor = '#4f4f4f', mirror = TRUE),
-        xaxis = list(title="", gridcolor = "#4f4f4f", showline = TRUE, linewidth = 1, linecolor = '#4f4f4f', mirror = TRUE)
-      ) %>%
-      config(displayModeBar = FALSE)
+  output$civicTypes2 <- renderEcharts4r({
+    civic_types |>
+      e_charts(group) |>
+      e_pie(count, 
+            radius = c("30%", "70%"),
+            label = list(show = FALSE),
+            labelLine = list(show = FALSE)) |>
+      e_title("Civic Infrastructure Types", left = "center", textStyle = list(color = "#fff")) |>
+      e_tooltip(
+        trigger = "item",
+        formatter = htmlwidgets::JS("function(params){ return params.name + ': ' + params.value; }")
+      ) |>
+      e_legend(
+        orient = "vertical", 
+        left = "left", 
+        bottom = 0, 
+        textStyle = list(color = "#fff", fontSize = 12)) |>
+      e_text_style(color = "#ffffff", fontFamily = "Inter") |>
+      e_color(c("#DB3069", "#F45D09", "#8A4285", "#00AEF6", "#43B171"))
   })
+  
+  
+# HOUSING PROFILE
+  
+  output$housingConstruction <- renderEcharts4r({
+    # Convert Construction Year to a factor with correct order
+    year_levels <- c("Pre 1960", "1961-1980", "1981-1990", "1991-2000", 
+                     "2001-2005", "2006-2010", "2011-2015", "2016-2021", "After 2021")
+    
+    housing_construction$`Construction Year` <- factor(housing_construction$`Construction Year`, 
+                                                       levels = year_levels)
+    
+    # Create a wider format for the echarts4r visualization
+    # Split the data by area
+    downtown_data <- housing_construction %>%
+      filter(Area == "Downtown Yonge") %>%
+      rename(Downtown_Yonge = Percentage)
+    
+    toronto_data <- housing_construction %>%
+      filter(Area == "Toronto CMA") %>%
+      rename(Toronto_CMA = Percentage)
+    
+    # Join them together
+    plot_data <- downtown_data %>%
+      select(`Construction Year`, Downtown_Yonge) %>%
+      left_join(
+        toronto_data %>% select(`Construction Year`, Toronto_CMA),
+        by = "Construction Year"
+      )
+    
+    # Create the echarts4r chart
+    plot_data %>%
+      e_charts(`Construction Year`) %>%
+      e_bar(Downtown_Yonge, name = "Downtown Yonge", 
+            itemStyle = list(color = "#00AEF6")) %>%  # light blue
+      e_bar(Toronto_CMA, name = "Toronto CMA", 
+            itemStyle = list(color = "#002A41")) %>%  # dark blue
+      e_tooltip(trigger = "axis") %>%
+      e_title("Housing Construction by Year and Area", textStyle = list(color = "#fff")) %>%
+      e_y_axis(name = "Percentage (%)", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_x_axis(name = "Housing", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_legend(top = "bottom") %>%
+      e_grid(containLabel = TRUE) %>%
+      e_legend(
+        orient = "horizontal", 
+        left = "left", 
+        bottom = 0, 
+        textStyle = list(color = "#fff", fontSize = 12)) %>%
+      e_text_style(color = "#ffffff", fontFamily = "Inter") %>%
+      e_toolbox_feature(feature = "saveAsImage")
+  })
+  
+  output$housingType <- renderEcharts4r({
+    
+    # Create a wider format for the echarts4r visualization
+    # Split the data by area
+    downtown_data <- housing_type %>%
+      filter(Area == "Downtown Yonge") %>%
+      rename(Downtown_Yonge = Percentage)
+    
+    toronto_data <- housing_type %>%
+      filter(Area == "Toronto CMA") %>%
+      rename(Toronto_CMA = Percentage)
+    
+    # Join them together
+    plot_data <- downtown_data %>%
+      select(`Housing Type`, Downtown_Yonge) %>%
+      left_join(
+        toronto_data %>% select(`Housing Type`, Toronto_CMA),
+        by = "Housing Type"
+      )
+    
+    # Create the echarts4r chart
+    plot_data %>%
+      e_charts(`Housing Type`) %>%
+      e_bar(Downtown_Yonge, name = "Downtown Yonge", 
+            itemStyle = list(color = "#00AEF6")) %>%  # light blue
+      e_bar(Toronto_CMA, name = "Toronto CMA", 
+            itemStyle = list(color = "#002A41")) %>%  # dark blue
+      e_tooltip(trigger = "axis") %>%
+      e_title("Housing Type by Year and Area", textStyle = list(color = "#fff")) %>%
+      e_y_axis(name = "Percentage (%)", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_x_axis(name = "Housing", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_legend(top = "bottom") %>%
+      e_grid(containLabel = TRUE) %>%
+      e_legend(
+        orient = "horizontal", 
+        left = "left", 
+        bottom = 0, 
+        textStyle = list(color = "#fff", fontSize = 12)) %>%
+      e_text_style(color = "#ffffff", fontFamily = "Inter") %>%
+      e_toolbox_feature(feature = "saveAsImage")
+  })
+  
+  
 }
 

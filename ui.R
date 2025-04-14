@@ -20,7 +20,8 @@ ui <- page_navbar(
   # MOVE THIS INTO EXTERNAL CSS ^
   
   nav_panel(title = "Home",
-            h1("Downtown Yonge BIA"),
+            h1(name),
+            p("Weclome to the Downtown Yonge BIA Main Street Metrics Dashboard! This dashboard gives you a quick snapshot of the BIA. On this page, you’ll find an interactive map alongside highlights from the latest quarter. To explore more, head to the Visitors page for insights on foot traffic and visitor demographics, or visit the Neighbourhood Profile for a deeper look at the area's characteristics."),
             layout_column_wrap(
               width = 1/2,
               card(
@@ -41,18 +42,18 @@ ui <- page_navbar(
             h2("2024 Q4 Highlights"),
             layout_columns(
               value_box(
-                title = "Number of Visitors", value = "28,000 (+5%)", ,
+                title = "Number of Visitors", value = "28,000 (+5%)",
                 theme = "success", showcase = bsicons::bs_icon("arrow-up"),
                 showcase_layout = "left center", full_screen = FALSE, fill = TRUE,
                 height = NULL
               ),
               value_box(
-                title = "Busiest Day of Week", value = "Tuesday", , theme = "primary",
+                title = "Busiest Day of Week", value = "Tuesday", theme = "primary",
                 showcase = bsicons::bs_icon("calendar"), showcase_layout = "left center",
                 full_screen = FALSE, fill = TRUE, height = NULL
               ),
               value_box(
-                title = "Busiest Time of Day", value = "12 - 6 PM", , theme = "secondary",
+                title = "Busiest Time of Day", value = "12 - 6 PM", theme = "secondary",
                 showcase = bsicons::bs_icon("clock"), showcase_layout = "left center",
                 full_screen = FALSE, fill = TRUE, height = NULL
               ),
@@ -64,13 +65,13 @@ ui <- page_navbar(
   
   
   nav_panel(title = "Visitors", 
-            h1("Downtown Yonge BIA"),
+            h1(name),
             navset_pill(
               nav_panel(
                 title = "Visitor Trends",
                 layout_sidebar(
                   sidebar = sidebar(
-                    selectInput(
+          selectInput(
                       "year",
                       "Select Year",
                       choices = c("2023", "2024"),
@@ -84,13 +85,16 @@ ui <- page_navbar(
                       selected = "Q4",
                       selectize = TRUE
                     )
-                  ),
+                  ),          
                   # card(
                   #  card_body(plotlyOutput("visitorLevels"))
                   # ),
                   card(
                     card_title("Monthly Visits since 2021"),
-                    card_body(echarts4rOutput("visitorLevels2"))
+                    card_body(
+                      p("This chart measures the number of pedestrian visits to the BIA on a monthly basis from 2021."),
+                      echarts4rOutput("visitorLevels2")
+                      )
                   ),
                   card(
                     card_body(plotlyOutput("visitorTypes"))
@@ -107,6 +111,19 @@ ui <- page_navbar(
                         plotlyOutput("visitorToD")
                       )
                     )
+                  ),
+                  layout_column_wrap(
+                    width = 1/2,
+                    card(
+                      card_body(
+                        echarts4rOutput("visitorDoW2")
+                      )
+                    ),
+                    card(
+                      card_body(
+                        echarts4rOutput("visitorToD2")
+                      )
+                    )
                   )
                 )
               ),
@@ -117,7 +134,7 @@ ui <- page_navbar(
   ),
   
   nav_panel("Neighbourhood Profile", 
-            h1("Downtown Yonge BIA"),
+            h1(name),
             navset_pill(
               nav_panel(
                 title = "Business",
@@ -166,7 +183,7 @@ ui <- page_navbar(
                   ),
                   card(
                     card_body(
-                      plotlyOutput("civicTypes")
+                      echarts4rOutput("civicTypes2")
                     )
                   )
                 ),
@@ -186,7 +203,18 @@ ui <- page_navbar(
                 )
               ),
               nav_panel(
-                title = "Housing"
+                title = "Housing",
+                h3("Housing"),
+                  card(
+                    card_body(
+                      echarts4rOutput("housingConstruction")
+                    )
+                  ),
+                  card(
+                    card_body(
+                      echarts4rOutput("housingType")
+                    )
+                  )
               ),
               nav_panel(
                 title = "Urban Form"
