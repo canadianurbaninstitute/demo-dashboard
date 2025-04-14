@@ -61,6 +61,8 @@ commute = read_csv("./data/commute.csv")
 
 # Demographic Data
 
+neighbourhood_demos = read_csv("./data/demographics.csv")
+
 
 
 

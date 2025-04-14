@@ -110,57 +110,42 @@ server <- function(input, output, session) {
   })
   
   
-  
-  
-  
   # Visitor Types Reactivity
-  visitorTypeData = reactive({
+  output$visitorTypes = renderEcharts4r({
+    # filter the data based on the selected Quarter and Year
     visitorTypeFiltered = ff_type %>%
       dplyr::filter((Quarter == input$quarter) & (Year == as.numeric(input$year) | Year == as.numeric(input$year) - 1))
-  })
-  
-  # Visitor Types Chart
-  output$visitorTypes = renderPlotly({
-    # generate the plot
-    plotVisitorType = ggplot(visitorTypeData(),
-                             aes(x = paste0(input$quarter, " ", as.character(Year)),
-                                 y = Visits, fill = factor(Type, levels = c("Infrequent Visitor", "Recurring Visitor", "Resident")),
-                                 text = paste("Visits:", scales::comma(round(Visits))))) +
-      geom_bar(aes(color = factor(Type, levels = c("Infrequent Visitor", "Recurring Visitor", "Resident"))),
-               position = "stack", stat = "identity", width = 0.7, linewidth = 1) +
-      scale_fill_manual(values = c("#FFD931", "#002940", "#00AEF6")) +
-      scale_color_manual(values = c("#FFD931", "#002940", "#00AEF6")) +
-      scale_y_continuous(labels = scales::comma_format(scale = 1e-3)) +
-      labs(title = "Visits by Type of Visitor", x = "Year", y = "Visits (Thousands)") +
-      theme(
-        panel.background = element_rect(fill = "transparent", color = NA),
-        plot.background = element_rect(fill = "transparent", color = NA),
-        legend.background = element_rect(fill = "transparent", color = NA),
-        text = element_text(color = "#fff"),
-        axis.text = element_text(color = "#fff"),
-        axis.title = element_text(color = "#fff"),
-        axis.title.x = element_blank(),
-        legend.position = "top",
-      )
     
-    # convert to plotly
-    ggplotly(plotVisitorType, tooltip = "text") %>%
-      config(displayModeBar = FALSE) %>%
-      layout(
-        paper_bgcolor = 'rgba(0,0,0,0)',
-        plot_bgcolor = 'rgba(0,0,0,0)',
-        font = list(color = "#fff", family = "Inter"),
-        title = list(font = list(family = "Roboto Mono", color = "#fff")),
-        legend = list(
-          font = list(size = 12),
-          title = "",
-          orientation = "h",
-          x = 0.5, xanchor = "center",
-          y = -0.2, yanchor = "top"
-        ),
-        yaxis = list(fixedrange = TRUE, gridcolor = "#4f4f4f", showline=TRUE, linewidth=1, linecolor='#4f4f4f',mirror=TRUE),
-        xaxis = list(gridcolor = "#4f4f4f", showline=TRUE, linewidth=1, linecolor='#4f4f4f',mirror=TRUE)
-      )
+    visitorTypePlot = visitorTypeFiltered %>%
+      mutate(Quarter_Year = paste(Quarter, Year)) %>%
+      select(Type, Quarter_Year, Visits)
+    
+    # Convert Visitor Type to a Factor
+    type_levels = c("Resident", "Recurring Visitor", "Infrequent Visitor")
+    
+    visitorTypePlot = visitorTypePlot %>%
+      mutate(Type = factor(Type, levels = type_levels))
+    
+    
+    # plot the data using the echarts package
+    visitorTypePlot %>%
+      group_by(Type) %>%
+      e_charts(Quarter_Year) %>%
+      e_bar(Visits, stack = "Visits", bind = Visits) %>%
+      e_color(c("#FFD931", "#002940", "#00AEF6")) %>%
+      e_tooltip(trigger = "axis") %>%
+      e_title("Visits by Type of Visitor", textStyle = list(color = "#fff")) %>%
+      e_y_axis(name = "Visits", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_x_axis(name = "Year", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_legend(top = "bottom") %>%
+      e_grid(containLabel = TRUE) %>%
+      e_legend(
+        orient = "horizontal", 
+        left = "center", 
+        bottom = 0, 
+        textStyle = list(color = "#fff", fontSize = 12)) %>%
+      e_text_style(color = "#ffffff", fontFamily = "Inter") %>%
+      e_toolbox_feature(feature = "saveAsImage")
   })
   
   

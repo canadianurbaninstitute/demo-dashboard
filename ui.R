@@ -85,10 +85,7 @@ ui <- page_navbar(
                       selected = "Q4",
                       selectize = TRUE
                     )
-                  ),          
-                  # card(
-                  #  card_body(plotlyOutput("visitorLevels"))
-                  # ),
+                  ),
                   card(
                     card_title("Monthly Visits since 2021"),
                     card_body(
@@ -97,7 +94,7 @@ ui <- page_navbar(
                       )
                   ),
                   card(
-                    card_body(plotlyOutput("visitorTypes"))
+                    card_body(echarts4rOutput("visitorTypes"))
                   ),
                   layout_column_wrap(
                     width = 1/2,
