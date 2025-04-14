@@ -57,8 +57,6 @@ housing_type = read_csv("./data/housing_type.csv")
 
 # Demographic Data
 
-neibourhood_demos = 
-
 
 
 
