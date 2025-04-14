@@ -220,7 +220,61 @@ ui <- page_navbar(
                 title = "Urban Form"
               ),
               nav_panel(
-                title = "Neighbourhood Demographics"
+                title = "Neighbourhood Demographics",
+                h3("Demographic Map"),
+                card(
+                  full_screen = FALSE,
+                  card_body(
+                    class = "p-0",
+                    maplibreOutput("demoMap")
+                  )
+                ),
+                layout_columns(
+                  value_box(
+                    title = "Number of Visitors", value = "28,000 (+5%)",
+                    theme = "success", showcase = bsicons::bs_icon("arrow-up"),
+                    showcase_layout = "left center", full_screen = FALSE, fill = TRUE,
+                    height = NULL
+                  ),
+                  value_box(
+                    title = "Busiest Day of Week", value = "Tuesday", theme = "primary",
+                    showcase = bsicons::bs_icon("calendar"), showcase_layout = "left center",
+                    full_screen = FALSE, fill = TRUE, height = NULL
+                  ),
+                  value_box(
+                    title = "Busiest Time of Day", value = "12 - 6 PM", theme = "secondary",
+                    showcase = bsicons::bs_icon("clock"), showcase_layout = "left center",
+                    full_screen = FALSE, fill = TRUE, height = NULL
+                  )
+                ),
+                layout_column_wrap(
+                  width = 1/2,
+                  card(
+                    full_screen = FALSE,
+                    card_body(
+                      echarts4rOutput("demoAge")
+                    )
+                  ),
+                  card(
+                    card_body(
+                      echarts4rOutput("demoFamily")
+                    )
+                  )
+                ),
+                layout_column_wrap(
+                  width = 1/2,
+                  card(
+                    full_screen = FALSE,
+                    card_body(
+                      echarts4rOutput("demoIncome")
+                    )
+                  ),
+                  card(
+                    card_body(
+                      echarts4rOutput("demoOccupation")
+                    )
+                  )
+                )
               )
             )
   ),
