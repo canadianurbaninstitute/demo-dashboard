@@ -235,6 +235,7 @@ ui <- page_navbar(
                     maplibreOutput("demoMap")
                   )
                 ),
+                h3("Demographic Summary"),
                 layout_columns(
                   uiOutput("VisMinBox"),
                   uiOutput("IndigBox"),
