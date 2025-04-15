@@ -100,25 +100,12 @@ ui <- page_navbar(
                     width = 1/2,
                     card(
                       card_body(
-                        plotlyOutput("visitorDoW")
+                        echarts4rOutput("visitorDoW")
                       )
                     ),
                     card(
                       card_body(
-                        plotlyOutput("visitorToD")
-                      )
-                    )
-                  ),
-                  layout_column_wrap(
-                    width = 1/2,
-                    card(
-                      card_body(
-                        echarts4rOutput("visitorDoW2")
-                      )
-                    ),
-                    card(
-                      card_body(
-                        echarts4rOutput("visitorToD2")
+                        echarts4rOutput("visitorToD")
                       )
                     )
                   )

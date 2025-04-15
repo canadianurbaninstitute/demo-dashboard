@@ -2,7 +2,7 @@ server <- function(input, output, session) {
   
   bs_themer()
   
-  # HOME
+  # HOME ----
   
   output$map <- renderMaplibre({
     maplibre(style = carto_style("dark-matter"),
@@ -38,9 +38,9 @@ server <- function(input, output, session) {
   
   
   
-  # Visitors ----
+  # VISITOR TRENDS ----
   
-  # Visitor Levels Reactivity
+  # Visitor Levels Plot
   visitorLevelsData = reactive({
     req(input$quarter)
     # set the filter conditions based on the selected year and quarter
@@ -87,13 +87,14 @@ server <- function(input, output, session) {
   })
   
   
-  # Visitor Types Reactivity
+  # Visitor Types Plot
   output$visitorTypes = renderEcharts4r({
     # filter the data based on the selected Quarter and Year
     visitorTypeFiltered = ff_type %>%
       dplyr::filter((Quarter == input$quarter) & (Year == as.numeric(input$year) | Year == as.numeric(input$year) - 1))
     
     visitorTypePlot = visitorTypeFiltered %>%
+      arrange(Year) %>%
       mutate(Quarter_Year = paste(Quarter, Year)) %>%
       select(Type, Quarter_Year, Visits)
     
@@ -109,7 +110,7 @@ server <- function(input, output, session) {
       group_by(Type) %>%
       e_charts(Quarter_Year) %>%
       e_bar(Visits, stack = "Visits", bind = Visits) %>%
-      e_color(c("#FFD931", "#002940", "#00AEF6")) %>%
+      e_color(c("#00AEF6", "#002940", "#FFD931")) %>%
       e_tooltip(trigger = "axis") %>%
       e_title("Visits by Type of Visitor", textStyle = list(color = "#fff")) %>%
       e_y_axis(name = "Visits", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
@@ -126,105 +127,88 @@ server <- function(input, output, session) {
   })
   
   
-  # Visitor Day of Week Reactivity
-  vistorDayData = reactive({
-    visitorDayFiltered = ff_day_of_week %>%
-      dplyr::filter((Quarter == input$quarter) & (Year == as.numeric(input$year) | Year == as.numeric(input$year) - 1))
-  })
-  
-  # Visitor Day of Week Chart
-  output$visitorDoW = renderPlotly({
-    # generate the plot
-    plotDoW = ggplot(vistorDayData(), aes(x = factor(Day, levels = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")),
-                                          y = Visits, fill = paste0(input$quarter, " ", as.character(Year)),
-                                          text = paste("Visits:", scales::comma(round(Visits))))) +
-      geom_bar(position = "dodge", stat = "identity", width = 0.6) +
-      scale_fill_manual(values = c("#002940", "#00AEF6")) +
-      scale_y_continuous(labels = scales::comma_format(scale = 1e-3)) +
-      labs(title = "Visits by Day of the Week", x = "Day of the Week", y = "Visits (Thousands)") +
-      theme(
-        panel.background = element_rect(fill = "transparent", color = NA),
-        plot.background = element_rect(fill = "transparent", color = NA),
-        legend.background = element_rect(fill = "transparent", color = NA),
-        text = element_text(color = "#fff"),
-        axis.text = element_text(color = "#fff"),
-        axis.title = element_text(color = "#fff"),
-        axis.title.x = element_blank(),
-        legend.position = "top",
-      )
+  # Visitors Day of Week Plot
+  output$visitorDoW = renderEcharts4r({
+    # filter the data based on the selected Quarter and Year
+      visitorDayFiltered = ff_day_of_week %>%
+        dplyr::filter((Quarter == input$quarter) & (Year == as.numeric(input$year) | Year == as.numeric(input$year) - 1))
     
-    # convert to plotly
-    ggplotly(plotDoW, tooltip = "text") %>%
-      config(displayModeBar = FALSE) %>%
-      layout(
-        paper_bgcolor = 'rgba(0,0,0,0)',
-        plot_bgcolor = 'rgba(0,0,0,0)',
-        font = list(color = "#fff", family = "Inter"),
-        title = list(font = list(family = "Roboto Mono", color = "#fff")),
-        legend = list(
-          font = list(size = 12),
-          title = "",
-          orientation = "h",
-          x = 0.5, xanchor = "center",
-          y = -0.2, yanchor = "top"
-        ),
-        yaxis = list(fixedrange = TRUE, gridcolor = "#4f4f4f", showline=TRUE, linewidth=1, linecolor='#4f4f4f',mirror=TRUE),
-        xaxis = list(gridcolor = "#4f4f4f", showline=TRUE, linewidth=1, linecolor='#4f4f4f',mirror=TRUE)
-      )
+    visitorDayPlot = visitorDayFiltered %>%
+      arrange(Year) %>%
+      mutate(Quarter_Year = paste(Quarter, Year)) %>%
+      select(Day, Quarter_Year, Visits)
+    
+    # Convert Day of week to a Factor
+    day_of_week_levels = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
+    
+    visitorDayPlot = visitorDayPlot %>%
+      mutate(Day = factor(Day, levels = day_of_week_levels))
+    
+    
+    # plot the data using the echarts package
+    visitorDayPlot %>%
+      group_by(Quarter_Year) %>%
+      e_charts(Day) %>%
+      e_bar(Visits) %>%
+      e_color(c("#002940", "#00AEF6")) %>%
+      e_tooltip(trigger = "axis") %>%
+      e_title("Visits by Day of the Week", textStyle = list(color = "#fff")) %>%
+      e_y_axis(name = "Visits", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_x_axis(name = "Year", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_legend(top = "bottom") %>%
+      e_grid(containLabel = TRUE) %>%
+      e_legend(
+        orient = "horizontal", 
+        left = "center", 
+        bottom = 0, 
+        textStyle = list(color = "#fff", fontSize = 12)) %>%
+      e_text_style(color = "#ffffff", fontFamily = "Inter") %>%
+      e_toolbox_feature(feature = "saveAsImage")
   })
   
   
-  # Visitor Time of Day Reactivity
-  visitorTimeData = reactive({
+  # Visitor Time of Day Plot
+  output$visitorToD = renderEcharts4r({
+    # filter the data based on the selected Quarter and Year
     visitorTimeFiltered = ff_time_of_day %>%
       dplyr::filter((Quarter == input$quarter) & (Year == as.numeric(input$year) | Year == as.numeric(input$year) - 1))
-  })
-  
-  # Visitor Time of Day Chart
-  output$visitorToD = renderPlotly({
-    # generate the plot
-    plotToD = ggplot(visitorTimeData(), aes(x = factor(Time, levels = c("Early Morning: 12am - 6am", "Morning: 6am - 12pm", "Afternoon: 12pm - 6pm", "Evening: 6pm - 12am")),
-                                           y = Visits, fill = paste0(input$quarter, " ", as.character(Year)),
-                                           text = paste("Visits:", scales::comma(round(Visits))))) +
-      geom_bar(position = "dodge", stat = "identity", width = 0.7) +
-      scale_fill_manual(values = c("#002A41", "#00AEF3")) +
-      scale_y_continuous(labels = scales::comma_format(scale = 1e-3)) +
-      labs(title = "Visits by Time of Day", x = "Time of Day", y = "Visits (Thousands)") +
-      theme(
-        panel.background = element_rect(fill = "transparent", color = NA),
-        plot.background = element_rect(fill = "transparent", color = NA),
-        legend.background = element_rect(fill = "transparent", color = NA),
-        text = element_text(color = "#fff"),
-        axis.text = element_text(color = "#fff"),
-        axis.text.x = element_text(angle = 10, vjust = 0.5, hjust = 1),
-        axis.title = element_text(color = "#fff"),
-        axis.title.x = element_blank(),
-        legend.position = "top", 
-      )
     
-    # convert to a plotly
-    ggplotly(plotToD, tooltip = "text") %>%
-      config(displayModeBar = FALSE) %>%
-      layout(
-        paper_bgcolor = 'rgba(0,0,0,0)',
-        plot_bgcolor = 'rgba(0,0,0,0)',
-        font = list(color = "#fff", family = "Inter"),
-        title = list(font = list(family = "Roboto Mono", color = "#fff")),
-        legend = list(
-          font = list(size = 12),
-          title = "",
-          orientation = "h",
-          x = 0.5, xanchor = "center",
-          y = -0.2, yanchor = "top"
-        ),
-        yaxis = list(fixedrange = TRUE, gridcolor = "#4f4f4f", showline=TRUE, linewidth=1, linecolor='#4f4f4f',mirror=TRUE),
-        xaxis = list(gridcolor = "#4f4f4f", showline=TRUE, linewidth=1, linecolor='#4f4f4f',mirror=TRUE)
-      )
+    visitorTimePlot = visitorTimeFiltered %>%
+      arrange(Year) %>%
+      mutate(Quarter_Year = paste(Quarter, Year)) %>%
+      select(Time, Quarter_Year, Visits)
+    
+    # Convert Day of week to a Factor
+    time_of_day_levels = c("Early Morning: 12am - 6am", "Morning: 6am - 12pm", "Afternoon: 12pm - 6pm", "Evening: 6pm - 12am")
+    
+    visitorTimePlot = visitorTimePlot %>%
+      mutate(Time = factor(Time, levels = time_of_day_levels))
+    
+    
+    # plot the data using the echarts package
+    visitorTimePlot %>%
+      group_by(Quarter_Year) %>%
+      e_charts(Time) %>%
+      e_bar(Visits) %>%
+      e_color(c("#002940", "#00AEF6")) %>%
+      e_tooltip(trigger = "axis") %>%
+      e_title("Visits by Time of Day", textStyle = list(color = "#fff")) %>%
+      e_y_axis(name = "Visits", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_x_axis(name = "Year", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_legend(top = "bottom") %>%
+      e_grid(containLabel = TRUE) %>%
+      e_legend(
+        orient = "horizontal", 
+        left = "center", 
+        bottom = 0, 
+        textStyle = list(color = "#fff", fontSize = 12)) %>%
+      e_text_style(color = "#ffffff", fontFamily = "Inter") %>%
+      e_toolbox_feature(feature = "saveAsImage")
   })
   
   
   
-  # BUSINESS PROFILE
+  # BUSINESS PROFILE ----
   
   output$businessMap <- renderMaplibre({
     maplibre(style = carto_style("dark-matter"),
@@ -341,7 +325,7 @@ server <- function(input, output, session) {
   })
   
   
-# HOUSING PROFILE
+  # HOUSING PROFILE ----
   
   output$housingConstruction <- renderEcharts4r({
     # Convert Construction Year to a factor with correct order
