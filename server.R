@@ -10,6 +10,29 @@ server <- function(input, output, session) {
              zoom = 14.5,
              pitch = 45,
              bearing = -17) |> 
+      add_vector_source(
+        id = "openmaptiles",
+        url = paste0("https://api.maptiler.com/tiles/v3-openmaptiles/tiles.json?key=y86lJ4kguNAzUQsF9r0N")
+      ) |>
+      add_fill_extrusion_layer(
+        id = "3d-buildings",
+        source = 'openmaptiles',
+        source_layer = 'building',
+        fill_extrusion_color = interpolate(
+          column = 'render_height',
+          values = c(0, 200, 400),
+          stops = c('#222', '#444', '#666')
+        ),
+        fill_extrusion_height = list(
+          'interpolate',
+          list('linear'),
+          list('zoom'),
+          14,
+          0,
+          15,
+          list('get', 'render_height')
+        )
+      ) |>
       add_fill_layer(id = "bia_boundary",
                      source = bia,
                      fill_color = "#00AEF6",
@@ -21,7 +44,7 @@ server <- function(input, output, session) {
         circular_patches = FALSE,
         position = "bottom-left",
         unique_id = "legend"
-      )
+      ) 
   }) 
   
   output$map1 <- renderMaplibre({
@@ -243,9 +266,47 @@ server <- function(input, output, session) {
       )
   })
   
+  
+  output$employmentSize <- renderMaplibre({
+    maplibre(style = carto_style("dark-matter"),
+             center = c(-79.381070, 43.656183),
+             zoom = 14) |> 
+      add_fill_layer(id = "bia_boundary",
+                     source = bia,
+                     fill_color = "#00AEF6",
+                     fill_opacity = 0.5) |> 
+      add_circle_layer(
+        id = "business-layer",
+        source = ms_businesses,
+        circle_color = match_expr(
+          "Group",
+          values = c("Retail", "Services and Other", "Food and Drink"),
+          stops = c("#F03838", "#00AEF6", "#43B171")
+        ),
+        circle_radius = step_expr(
+          "EmpSzNm",
+          values = c(0, 5, 10, 50, 100, 1000),
+          stops = c(2, 4, 6, 8, 10, 12),
+          base = 1 # Adjust sizes as needed
+        ),
+        circle_stroke_color = "#ffffff",
+        circle_stroke_width = 1,
+        circle_opacity = 0.8,
+        tooltip = "Group",
+      ) |>
+      add_categorical_legend(
+        legend_title = "Business Types",
+        values = c("Retail", "Services and Other", "Food and Drink"),
+        colors = c("#F03838", "#00AEF6", "#43B171"),
+        circular_patches = TRUE,
+        position = "bottom-left",
+        unique_id = "legend"
+      )
+  })
+  
 
   
-  output$businessTypes2 <- renderEcharts4r({
+  output$businessTypes <- renderEcharts4r({
     business_types |>
       e_charts(group) |>
       e_pie(count, 
@@ -265,8 +326,6 @@ server <- function(input, output, session) {
       e_text_style(color = "#ffffff", fontFamily = "Inter") |>
       e_color(c("#F03838", "#43B171", "#00AEF6"))
   })
-
-  
   
   
   output$civicMap <- renderMaplibre({
@@ -303,7 +362,7 @@ server <- function(input, output, session) {
   })
 
   
-  output$civicTypes2 <- renderEcharts4r({
+  output$civicTypes <- renderEcharts4r({
     civic_types |>
       e_charts(group) |>
       e_pie(count, 
@@ -416,6 +475,112 @@ server <- function(input, output, session) {
       e_text_style(color = "#ffffff", fontFamily = "Inter") %>%
       e_toolbox_feature(feature = "saveAsImage")
   })
+  
+  
+  ### URBAN FORM
+  
+  output$urbanFormMap <- renderMaplibre({
+    maplibre(style = carto_style("dark-matter"),
+             center = c(-79.381070, 43.656183),
+             zoom = 14.5,
+             pitch = 45,
+             bearing = -17) |> 
+      add_vector_source(
+        id = "openmaptiles",
+        url = paste0("https://api.maptiler.com/tiles/v3-openmaptiles/tiles.json?key=y86lJ4kguNAzUQsF9r0N")
+      ) |>
+      add_fill_extrusion_layer(
+        id = "3d-buildings",
+        source = 'openmaptiles',
+        source_layer = 'building',
+        fill_extrusion_color = interpolate(
+          column = 'render_height',
+          values = c(0, 200, 400),
+          stops = c('#222', '#444', '#666')
+        ),
+        fill_extrusion_height = list(
+          'interpolate',
+          list('linear'),
+          list('zoom'),
+          14,
+          0,
+          15,
+          list('get', 'render_height')
+        )
+      ) |>
+      add_line_layer(
+        id = "transit",
+        source = 'openmaptiles',
+        source_layer = 'transportation',
+        filter = list("in", "subclass", "tram", "subway", "rail"),
+        line_color = "#F03838",
+        line_opacity = 0.7
+      ) |>
+      add_fill_layer(
+        id = "greenspace",
+        source = "openmaptiles",
+        source_layer = "landcover",
+        fill_color = "#43B171",
+        fill_opacity = 0.5,
+        filter = list("==", "class", "grass")
+      ) |>
+      add_fill_layer(id = "bia_boundary",
+                     source = bia,
+                     fill_color = "#00AEF6",
+                     fill_opacity = 0.5) |>
+      add_categorical_legend(
+        legend_title = "Legend",
+        values = c("Downtown Yonge BIA", "Transit", "Green Space"),
+        colors = c("#00AEF6", "#F03838", "#43B171"),
+        circular_patches = FALSE,
+        position = "bottom-left",
+        unique_id = "legend"
+      ) 
+  }) 
+  
+  output$commuteMode <- renderEcharts4r({
+    
+    # Prepare the data
+    downtown_data <- commute %>%
+      filter(Area == "Downtown Yonge") %>%
+      rename(Downtown_Yonge = weighted_mean)
+    
+    toronto_data <- commute %>%
+      filter(Area == "Toronto CMA") %>%
+      rename(Toronto_CMA = weighted_mean)
+    
+    # Merge for grouped format
+    plot_data <- downtown_data %>%
+      select(variable, Downtown_Yonge) %>%
+      left_join(
+        toronto_data %>% select(variable, Toronto_CMA),
+        by = "variable"
+      )
+    
+    # Create the chart
+    plot_data %>%
+      e_charts(variable) %>%
+      e_bar(Downtown_Yonge, name = "Downtown Yonge",
+            itemStyle = list(color = "#00AEF6")) %>%
+      e_bar(Toronto_CMA, name = "Toronto CMA",
+            itemStyle = list(color = "#002A41")) %>%
+      e_tooltip(
+        trigger = "axis"
+      ) %>%
+      e_title("Commute Mode by Area", textStyle = list(color = "#fff")) %>%
+      e_y_axis(name = "Percentage (%)",
+               axisLine = list(lineStyle = list(color = "#4f4f4f")),
+               splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_x_axis(name = "Commute Mode",
+               axisLine = list(lineStyle = list(color = "#4f4f4f")),
+               splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_legend(orient = "horizontal", left = "left", bottom = 0,
+               textStyle = list(color = "#fff", fontSize = 12)) %>%
+      e_grid(containLabel = TRUE) %>%
+      e_text_style(color = "#ffffff", fontFamily = "Inter") %>%
+      e_toolbox_feature(feature = "saveAsImage")
+  })
+  
   
   
 }
