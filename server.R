@@ -60,6 +60,7 @@ server <- function(input, output, session) {
   
   
   # VISITOR TRENDS ----
+
   
   # Visitor Levels Plot
   visitorLevelsData = reactive({
@@ -222,9 +223,11 @@ server <- function(input, output, session) {
       e_toolbox_feature(feature = "saveAsImage")
   })
   
+  ## VISITOR DEMOGRAPHICS ----
   
+  # NEIGHBOURHOOD PROFILE ----
   
-  # BUSINESS PROFILE ----
+  ## BUSINESS PROFILE ----
   
   output$businessMap <- renderMaplibre({
     maplibre(style = carto_style("dark-matter"),
@@ -377,7 +380,7 @@ server <- function(input, output, session) {
   })
   
   
-  # HOUSING PROFILE ----
+  ## HOUSING PROFILE ----
   
   output$housingConstruction <- renderEcharts4r({
     # Convert Construction Year to a factor with correct order
@@ -470,7 +473,7 @@ server <- function(input, output, session) {
   })
   
   
-  ### URBAN FORM
+  ## URBAN FORM ----
   
   output$urbanFormMap <- renderMaplibre({
     maplibre(style = carto_style("dark-matter"),
@@ -573,6 +576,212 @@ server <- function(input, output, session) {
       e_text_style(color = "#ffffff", fontFamily = "Inter") %>%
       e_toolbox_feature(feature = "saveAsImage")
   })
+  
+  
+  ## NEIGHBOURHOOD DEMOGRAPHICS ----
+  
+  # Demographic Chloropleth Map
+  output$demoMap = renderMaplibre({
+    
+  })
+  
+  
+  # Demographic Summary Boxes
+  
+  # Visible Minority Status
+  output$VisMinBox = renderUI({
+    vismin_filtered = neighbourhood_demos %>%
+      select(Area, `Visible Minority Total`) %>%
+      filter(Area == "Downtown Yonge")
+
+    value_box(
+      title = "Percentage of Visible Minorities",
+      value = paste(round(vismin_filtered$`Visible Minority Total`[1],2), " %"),
+      theme = "success",
+      showcase_layout = "left center", 
+      full_screen = FALSE, 
+      fill = TRUE,
+      height = NULL
+    )
+  })
+  
+  # Indigenous Identity
+  output$IndigBox = renderUI({
+    indig_filtered = neighbourhood_demos %>%
+      select(Area, `Indigenous Identity`) %>%
+      filter(Area == "Downtown Yonge")
+    
+    value_box(
+      title = "Percentage of Indigenous Population",
+      value = paste(round(indig_filtered$`Indigenous Identity`[1],2), " %"),
+      theme = "primary",
+      showcase_layout = "left center", 
+      full_screen = FALSE, 
+      fill = TRUE,
+      height = NULL
+    )
+  })
+  
+  # Immigration Status
+  output$ImmOutput = renderUI({
+    imm_filtered = neighbourhood_demos %>%
+      select(Area, Immigrants) %>%
+      filter(Area == "Downtown Yonge")
+    
+    value_box(
+      title = "Percentage of Immigrants",
+      value = paste(round(imm_filtered$Immigrants[1],2), " %"),
+      theme = "warning",
+      showcase_layout = "left center", 
+      full_screen = FALSE, 
+      fill = TRUE,
+      height = NULL
+    )
+  })
+  
+  # Population Period
+  output$demoAge = renderEcharts4r({
+    
+    # filter and clean the gender age data
+    demoAgeData = neighbourhood_demos %>%
+      select(Area, (20:55)) %>%
+      filter(Area == "Downtown Yonge") %>% pivot_longer(!Area, names_to = "Groups", values_to = "percentage") %>%
+      separate(Groups, into = c("gender", "age_group"), sep = " ", extra = "merge") %>%
+      mutate(age_group = str_trim(age_group),
+             percentage = if_else(gender == "Females", percentage * -1, percentage))
+    
+    # convert age_group to a factor
+    age_levels = c("0 To 4", "5 To 9", "10 To 14", "15 To 19", "20 To 24",
+                   "25 To 29", "30 To 34", "35 To 39", "40 To 44", "45 To 49",
+                   "50 To 54", "55 To 59", "60 To 64", "65 To 69", "70 To 74", 
+                   "75 To 79", "80 To 84", "85 Or Older")
+    
+    demoAgePlot = demoAgeData %>%
+      mutate(age_group = factor(age_group, levels = age_levels))
+    
+    # plot the data using the echarts package
+    demoAgePlot %>%
+      group_by(gender) %>%
+      e_charts(age_group) %>%
+      e_bar(percentage, stack = "percentage") %>%
+      e_color(c("#002940", "#00AEF6")) %>%
+      e_flip_coords() %>%
+      e_tooltip(trigger = "axis") %>%
+      e_title("Population Pyramid", textStyle = list(color = "#fff")) %>%
+      e_y_axis(name = "Percentage of Population", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_x_axis(name = "Age Group", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_legend(top = "bottom") %>%
+      e_grid(containLabel = TRUE) %>%
+      e_legend(
+        orient = "horizontal", 
+        left = "left", 
+        bottom = 0, 
+        textStyle = list(color = "#fff", fontSize = 12)) %>%
+      e_text_style(color = "#ffffff", fontFamily = "Inter") %>%
+      e_toolbox_feature(feature = "saveAsImage")
+  })
+  
+  # Family Structure
+  output$demoFamily = renderEcharts4r({
+    
+    # filter and clean the family structure data
+    demosFamilyPlot = neighbourhood_demos %>%
+      select(Area, `Total Couple Families`, `Married Couple Families`, `Common Law Couple Families`, `Total Lone Parent Families`) %>%
+      pivot_longer(!Area, names_to = "category", values_to = "percentage")
+    
+    # plot the data using the echarts package
+    demosFamilyPlot %>%
+      group_by(Area) %>%
+      e_charts(category) %>%
+      e_bar(percentage) %>%
+      e_color(c("#002940", "#00AEF6")) %>%
+      e_tooltip(trigger = "axis") %>%
+      e_title("Census Family Structure", textStyle = list(color = "#fff")) %>%
+      e_y_axis(name = "Percentage of Population", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_x_axis(name = "Census Family", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_legend(top = "bottom") %>%
+      e_grid(containLabel = TRUE) %>%
+      e_legend(
+        orient = "horizontal", 
+        left = "left", 
+        bottom = 0, 
+        textStyle = list(color = "#fff", fontSize = 12)) %>%
+      e_text_style(color = "#ffffff", fontFamily = "Inter") %>%
+      e_toolbox_feature(feature = "saveAsImage")
+  })
+  
+  # Household Income
+  output$demoIncome = renderEcharts4r({
+    
+    # filter and clean the Income data
+    demosIncomePlot = neighbourhood_demos %>%
+      select(Area, (71:76)) %>%
+      pivot_longer(!Area, names_to = "category", values_to = "percentage") %>%
+      mutate(category = str_remove(category, "Household Income") %>% str_trim())
+    
+    
+    # plot the data using the echarts package
+    demosIncomePlot %>%
+      group_by(Area) %>%
+      e_charts(category) %>%
+      e_bar(percentage) %>%
+      e_color(c("#002940", "#00AEF6")) %>%
+      e_tooltip(trigger = "axis") %>%
+      e_title("Household Income", textStyle = list(color = "#fff")) %>%
+      e_y_axis(name = "Percentage of Population", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_x_axis(name = "Income Category", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_legend(top = "bottom") %>%
+      e_grid(containLabel = TRUE) %>%
+      e_legend(
+        orient = "horizontal", 
+        left = "left", 
+        bottom = 0, 
+        textStyle = list(color = "#fff", fontSize = 12)) %>%
+      e_text_style(color = "#ffffff", fontFamily = "Inter") %>%
+      e_toolbox_feature(feature = "saveAsImage")
+  })
+  
+  # Occupation
+  output$demoOccupation = renderEcharts4r({
+    
+    # filter and clean the occupation data
+    demosOccupationPlot = neighbourhood_demos %>%
+      select(Area, (80:89)) %>%
+      pivot_longer(!Area, names_to = "category", values_to = "percentage")
+    
+    # plot the data using the echarts package
+    demosOccupationPlot %>%
+      group_by(Area) %>%
+      e_charts(category) %>%
+      e_bar(percentage) %>%
+      e_color(c("#002940", "#00AEF6")) %>%
+      e_tooltip(trigger = "axis") %>%
+      e_title("Employment Occupation", textStyle = list(color = "#fff")) %>%
+      e_y_axis(name = "Percentage of Population", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_x_axis(name = "Occupational Category", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_legend(top = "bottom") %>%
+      e_grid(containLabel = TRUE) %>%
+      e_legend(
+        orient = "horizontal", 
+        left = "left", 
+        bottom = 0, 
+        textStyle = list(color = "#fff", fontSize = 12)) %>%
+      e_text_style(color = "#ffffff", fontFamily = "Inter") %>%
+      e_toolbox_feature(feature = "saveAsImage")
+  })
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   
   
