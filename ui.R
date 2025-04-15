@@ -236,22 +236,9 @@ ui <- page_navbar(
                   )
                 ),
                 layout_columns(
-                  value_box(
-                    title = "Number of Visitors", value = "28,000 (+5%)",
-                    theme = "success", showcase = bsicons::bs_icon("arrow-up"),
-                    showcase_layout = "left center", full_screen = FALSE, fill = TRUE,
-                    height = NULL
-                  ),
-                  value_box(
-                    title = "Busiest Day of Week", value = "Tuesday", theme = "primary",
-                    showcase = bsicons::bs_icon("calendar"), showcase_layout = "left center",
-                    full_screen = FALSE, fill = TRUE, height = NULL
-                  ),
-                  value_box(
-                    title = "Busiest Time of Day", value = "12 - 6 PM", theme = "secondary",
-                    showcase = bsicons::bs_icon("clock"), showcase_layout = "left center",
-                    full_screen = FALSE, fill = TRUE, height = NULL
-                  )
+                  uiOutput("VisMinBox"),
+                  uiOutput("IndigBox"),
+                  uiOutput("ImmOutput")
                 ),
                 layout_column_wrap(
                   width = 1/2,
