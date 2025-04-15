@@ -69,6 +69,13 @@ ui <- page_navbar(
             navset_pill(
               nav_panel(
                 title = "Visitor Trends",
+                card(
+                  card_title("Monthly Visits since 2021"),
+                  card_body(
+                    p("This chart measures the number of pedestrian visits to the BIA on a monthly basis from 2021."),
+                    echarts4rOutput("visitorLevels")
+                  )
+                ),
                 layout_sidebar(
                   sidebar = sidebar(
           selectInput(
@@ -87,17 +94,8 @@ ui <- page_navbar(
                     )
                   ),
                   card(
-                    card_title("Monthly Visits since 2021"),
-                    card_body(
-                      p("This chart measures the number of pedestrian visits to the BIA on a monthly basis from 2021."),
-                      echarts4rOutput("visitorLevels")
-                      )
-                  ),
-                  card(
                     card_body(echarts4rOutput("visitorTypes"))
                   ),
-                  layout_column_wrap(
-                    width = 1/2,
                     card(
                       card_body(
                         echarts4rOutput("visitorDoW")
@@ -108,7 +106,6 @@ ui <- page_navbar(
                         echarts4rOutput("visitorToD")
                       )
                     )
-                  )
                 )
               ),
               nav_panel(
@@ -122,20 +119,6 @@ ui <- page_navbar(
             navset_pill(
               nav_panel(
                 title = "Business",
-                layout_columns(
-                  value_box(
-                    title = "Number of Main Street Businesses", value = "581",
-                    theme = "primary", showcase = bsicons::bs_icon("shop"),
-                    showcase_layout = "left center", full_screen = FALSE, fill = TRUE,
-                    height = NULL
-                  ),
-                  value_box(
-                    title = "Independent Business Index", value = "0.54",
-                    theme = "warning", showcase = bsicons::bs_icon("speedometer"),
-                    showcase_layout = "left center", full_screen = FALSE, fill = TRUE,
-                    height = NULL
-                  )
-                ),
                 h3("Business Distribution"),
                 layout_column_wrap(
                   width = 1/2,
@@ -151,6 +134,20 @@ ui <- page_navbar(
                       echarts4rOutput("businessTypes")
                     )
                   ),
+                ),
+                layout_columns(
+                  value_box(
+                    title = "Number of Main Street Businesses", value = "581",
+                    theme = "primary", showcase = bsicons::bs_icon("shop"),
+                    showcase_layout = "left center", full_screen = FALSE, fill = TRUE,
+                    height = NULL
+                  ),
+                  value_box(
+                    title = "Independent Business Index", value = "0.54",
+                    theme = "warning", showcase = bsicons::bs_icon("speedometer"),
+                    showcase_layout = "left center", full_screen = FALSE, fill = TRUE,
+                    height = NULL
+                  )
                 ),
                 h3("Employment Size"),
                 card(

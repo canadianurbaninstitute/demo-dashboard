@@ -1,6 +1,6 @@
 server <- function(input, output, session) {
   
-  bs_themer()
+  # bs_themer()
   
   # HOME ----
   
@@ -21,7 +21,7 @@ server <- function(input, output, session) {
         fill_extrusion_color = interpolate(
           column = 'render_height',
           values = c(0, 200, 400),
-          stops = c('#222', '#444', '#666')
+          stops = c('#666', '#999', '#eee')
         ),
         fill_extrusion_height = list(
           'interpolate',
@@ -59,8 +59,6 @@ server <- function(input, output, session) {
   }) 
   
   
-  
-  
   # VISITOR TRENDS ----
   
   # Visitor Levels Plot
@@ -88,25 +86,20 @@ server <- function(input, output, session) {
       dplyr::mutate(Date = as.Date(Date)) %>%
       dplyr::arrange(Date) %>%
       e_charts(Date) %>%
-      e_line(serie = Count, name = "Visits", symbol = "circle", symbol_size = 8,
-             lineStyle = list(width = 2, color = "#00AEF6"),
-             itemStyle = list(color = "#00AEF6")) %>%
+      e_line(serie = Count, name = "Visits") %>%
       e_x_axis(
         type = "time",
         min = "2021-01-01",
         max = "2025-01-01",
-        axisLine = list(lineStyle = list(color = "#4f4f4f")),
-        axisLabel = list(color = "#ffffff")
       ) %>%
       e_y_axis(
         name = "Visits",
         max = "10000000",
-        axisLine = list(lineStyle = list(color = "#4f4f4f")),
-        splitLine = list(lineStyle = list(color = "#4f4f4f"))
       ) %>%
       e_tooltip(trigger = "axis") %>%
-      e_text_style(color = "#ffffff", fontFamily = "Inter") %>%
-      e_legend(show = FALSE)
+      e_text_style(fontFamily = "Inter") %>%
+      e_legend(show = FALSE) %>%
+      e_theme_custom("theme/demo_theme.json")
   })
   
   
@@ -133,7 +126,7 @@ server <- function(input, output, session) {
       group_by(Type) %>%
       e_charts(Quarter_Year) %>%
       e_bar(Visits, stack = "Visits", bind = Visits) %>%
-      e_color(c("#00AEF6", "#002940", "#FFD931")) %>%
+      e_color(c("#00AEF6", "#DB3069", "#43B171")) %>%
       e_tooltip(trigger = "axis") %>%
       e_title("Visits by Type of Visitor", textStyle = list(color = "#fff")) %>%
       e_y_axis(name = "Visits", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
@@ -173,7 +166,7 @@ server <- function(input, output, session) {
       group_by(Quarter_Year) %>%
       e_charts(Day) %>%
       e_bar(Visits) %>%
-      e_color(c("#002940", "#00AEF6")) %>%
+      e_color(c("#DB3069", "#00AEF6")) %>%
       e_tooltip(trigger = "axis") %>%
       e_title("Visits by Day of the Week", textStyle = list(color = "#fff")) %>%
       e_y_axis(name = "Visits", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
@@ -213,7 +206,7 @@ server <- function(input, output, session) {
       group_by(Quarter_Year) %>%
       e_charts(Time) %>%
       e_bar(Visits) %>%
-      e_color(c("#002940", "#00AEF6")) %>%
+      e_color(c("#DB3069", "#00AEF6")) %>%
       e_tooltip(trigger = "axis") %>%
       e_title("Visits by Time of Day", textStyle = list(color = "#fff")) %>%
       e_y_axis(name = "Visits", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
@@ -418,7 +411,7 @@ server <- function(input, output, session) {
       e_bar(Downtown_Yonge, name = "Downtown Yonge", 
             itemStyle = list(color = "#00AEF6")) %>%  # light blue
       e_bar(Toronto_CMA, name = "Toronto CMA", 
-            itemStyle = list(color = "#002A41")) %>%  # dark blue
+            itemStyle = list(color = "#DB3069")) %>%  # dark blue
       e_tooltip(trigger = "axis") %>%
       e_title("Housing Construction by Year and Area", textStyle = list(color = "#fff")) %>%
       e_y_axis(name = "Percentage (%)", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
@@ -460,7 +453,7 @@ server <- function(input, output, session) {
       e_bar(Downtown_Yonge, name = "Downtown Yonge", 
             itemStyle = list(color = "#00AEF6")) %>%  # light blue
       e_bar(Toronto_CMA, name = "Toronto CMA", 
-            itemStyle = list(color = "#002A41")) %>%  # dark blue
+            itemStyle = list(color = "#DB3069")) %>%  # dark blue
       e_tooltip(trigger = "axis") %>%
       e_title("Housing Type by Year and Area", textStyle = list(color = "#fff")) %>%
       e_y_axis(name = "Percentage (%)", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
@@ -563,7 +556,7 @@ server <- function(input, output, session) {
       e_bar(Downtown_Yonge, name = "Downtown Yonge",
             itemStyle = list(color = "#00AEF6")) %>%
       e_bar(Toronto_CMA, name = "Toronto CMA",
-            itemStyle = list(color = "#002A41")) %>%
+            itemStyle = list(color = "#DB3069")) %>%
       e_tooltip(
         trigger = "axis"
       ) %>%
