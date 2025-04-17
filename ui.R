@@ -168,7 +168,6 @@ ui <- page_navbar(
                 title = "Civic Infrastructure",
                 h3("Civic Infrastructure Distribution"),
                 p("The civic infrastructure distribution map shows the location and type of civic infrastructure across Downtown Yonge."),
-                
                 layout_column_wrap(
                   width = 1/2,
                   card(
@@ -265,12 +264,20 @@ ui <- page_navbar(
                       echarts4rOutput("demoAge")
                     )
                   ),
+                p("The census family structure chart compares Downtown Yonge and Toronto CMA by type of family (e.g., married, common-law)."),
+                layout_column_wrap(
+                  width = 1/2,
                   card(
                     card_body(
-                      p("The census family structure chart compares Downtown Yonge and Toronto CMA by type of family (e.g., married, common-law)."),
                       echarts4rOutput("demoFamily")
                     )
                   ),
+                  card(
+                    card_body(
+                      echarts4rOutput("demoFamilyCMA")
+                    )
+                  )
+                ),
                   card(
                     full_screen = FALSE,
                     card_body(
@@ -278,12 +285,20 @@ ui <- page_navbar(
                       echarts4rOutput("demoIncome")
                     )
                   ),
+                p("The employment occupation chart highlights the share of population in different job sectors."),
+                layout_column_wrap(
+                  width = 1/2,
                   card(
                     card_body(
-                      p("The employment occupation chart highlights the share of population in different job sectors."),
                       echarts4rOutput("demoOccupation")
                     )
+                  ),
+                  card(
+                    card_body(
+                      echarts4rOutput("demoOccupationCMA")
+                    )
                   )
+                ),
               )
             )
   ),

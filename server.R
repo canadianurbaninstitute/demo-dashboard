@@ -512,7 +512,8 @@ server <- function(input, output, session) {
           0,
           15,
           list('get', 'render_height')
-        )
+        ),
+        fill_extrusion_opacity = 0.8
       ) |>
       add_line_layer(
         id = "transit",
@@ -701,34 +702,86 @@ server <- function(input, output, session) {
       e_toolbox_feature(feature = "saveAsImage")
   })
   
-  # Family Structure
-  output$demoFamily = renderEcharts4r({
-    
-    # filter and clean the family structure data
-    demosFamilyPlot = neighbourhood_demos %>%
-      select(Area, `Total Couple Families`, `Married Couple Families`, `Common Law Couple Families`, `Total Lone Parent Families`) %>%
-      pivot_longer(!Area, names_to = "category", values_to = "percentage")
-    
-    # plot the data using the echarts package
-    demosFamilyPlot %>%
-      group_by(Area) %>%
+  output$demoFamily <- renderEcharts4r({
+    neighbourhood_demos %>%
+      filter(Area == "Downtown Yonge") %>%
+      select(
+        `Total Couple Families`,
+        `Married Couple Families`,
+        `Common Law Couple Families`,
+        `Total Lone Parent Families`
+      ) %>%
+      pivot_longer(
+        cols      = everything(),
+        names_to  = "category",
+        values_to = "percentage"
+      ) %>%
       e_charts(category) %>%
-      e_bar(percentage) %>%
-      e_color(c("#DB3069", "#00AEF6")) %>%
-      e_tooltip(trigger = "axis") %>%
-      e_title("Census Family Structure", textStyle = list(color = "#fff")) %>%
-      e_y_axis(name = "Percentage of Population", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
-      e_x_axis(name = "Census Family", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
-      e_legend(top = "bottom") %>%
-      e_grid(containLabel = TRUE) %>%
+      e_pie(
+        serie  = percentage,
+        radius = c("40%", "70%"),
+        name   = "Family",
+        label = list(show = FALSE),
+        labelLine = list(show = FALSE)
+      ) %>%
+      e_title(
+        "Downtown Yonge Family Structure",
+        textStyle = list(color = "#fff")
+      ) %>%
+      e_tooltip(
+        trigger   = "item",
+        formatter = "{b}: {d}%"
+      ) %>%
       e_legend(
-        orient = "horizontal", 
-        left = "left", 
+        orient = "vertical", 
+        right = "right", 
         bottom = 0, 
-        textStyle = list(color = "#fff", fontSize = 12)) %>%
-      e_text_style(color = "#ffffff", fontFamily = "Inter") %>%
-      e_toolbox_feature(feature = "saveAsImage")
+        textStyle = list(color = "#fff", fontSize = 12)) |>
+      e_text_style(color = "#ffffff", fontFamily = "Inter") |>
+      e_color(c("#DB3069", "#F45D09", "#8A4285", "#00AEF6", "#43B171"))
   })
+  
+  
+  # Toronto CMA donut
+  output$demoFamilyCMA <- renderEcharts4r({
+    neighbourhood_demos %>%
+      filter(Area == "Toronto CMA") %>%
+      select(
+        `Total Couple Families`,
+        `Married Couple Families`,
+        `Common Law Couple Families`,
+        `Total Lone Parent Families`
+      ) %>%
+      pivot_longer(
+        cols      = everything(),
+        names_to  = "category",
+        values_to = "percentage"
+      ) %>%
+      e_charts(category) %>%
+      e_pie(
+        serie  = percentage,
+        radius = c("40%", "70%"),
+        name   = "Family",
+        label = list(show = FALSE),
+        labelLine = list(show = FALSE)
+      ) %>%
+      e_title(
+        "Toronto CMA Family Structure",
+        textStyle = list(color = "#fff")
+      ) %>%
+      e_tooltip(
+        trigger   = "item",
+        formatter = "{b}: {d}%"
+      ) |>
+      e_legend(
+        orient = "vertical", 
+        right = "right", 
+        bottom = 0, 
+        textStyle = list(color = "#fff", fontSize = 12)) |>
+      e_text_style(color = "#ffffff", fontFamily = "Inter") |>
+      e_color(c("#DB3069", "#F45D09", "#8A4285", "#00AEF6", "#43B171"))
+  })
+  
   
   # Household Income
   output$demoIncome = renderEcharts4r({
@@ -761,37 +814,94 @@ server <- function(input, output, session) {
       e_toolbox_feature(feature = "saveAsImage")
   })
   
-  # Occupation
-  output$demoOccupation = renderEcharts4r({
-    
-    # filter and clean the occupation data
-    demosOccupationPlot = neighbourhood_demos %>%
-      select(Area, (81:89)) %>%
-      pivot_longer(!Area, names_to = "category", values_to = "percentage")
-    
-    # plot the data using the echarts package
-    demosOccupationPlot %>%
-      group_by(Area) %>%
-      e_charts(category) %>%
-      e_bar(percentage) %>%
-      e_color(c("#DB3069", "#00AEF6")) %>%
-      e_tooltip(trigger = "axis") %>%
-      e_title("Employment Occupation", textStyle = list(color = "#fff")) %>%
-      e_y_axis(name = "Percentage of Population", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
-      e_x_axis(name = "Occupational Category", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
-      e_legend(top = "bottom") %>%
-      e_grid(containLabel = TRUE) %>%
+
+  # occupation
+  
+  output$demoOccupation <- renderEcharts4r({
+    neighbourhood_demos %>%
+      filter(Area == "Downtown Yonge") %>%
+      # pick just those 9 occupation columns
+      select((81:89)) %>%
+      pivot_longer(
+        cols      = everything(),
+        names_to  = "category",
+        values_to = "percentage"
+      ) |>
+      e_charts(category) |>
+      e_pie(
+        serie  = percentage,
+        radius = c("40%", "70%")
+      ) |>
+      e_title(
+        "Downtown Yonge: Employment by Occupation",
+        textStyle = list(color = "#fff")
+      ) |>
+      e_tooltip(
+        trigger   = "item",
+        formatter = "{b}: {d}%"
+      ) |>
       e_legend(
-        orient = "horizontal", 
-        left = "left", 
-        bottom = 0, 
-        textStyle = list(color = "#fff", fontSize = 12)) %>%
-      e_text_style(color = "#ffffff", fontFamily = "Inter") %>%
-      e_toolbox_feature(feature = "saveAsImage")
+        show = FALSE
+      ) |>
+      e_text_style(
+        color      = "#ffffff",
+        fontFamily = "Inter"
+      ) |>
+      e_color(c(
+        "#DB3069",
+        "#F45D09",
+        "#8A4285",
+        "#00AEF6",
+        "#43B171",
+        "#F03838",
+        "#FFD931",
+        "#3030bf",
+        "#1be0b9"
+      ))
   })
   
-  
-  
+  # Toronto CMA occupation donut
+  output$demoOccupationCMA <- renderEcharts4r({
+    neighbourhood_demos %>%
+      filter(Area == "Toronto CMA") %>%
+      select((81:89)) %>%
+      pivot_longer(
+        cols      = everything(),
+        names_to  = "category",
+        values_to = "percentage"
+      ) |>
+      e_charts(category) |>
+      e_pie(
+        serie  = percentage,
+        radius = c("40%", "70%"),
+      ) |>
+      e_title(
+        "Toronto CMA: Employment by Occupation",
+        textStyle = list(color = "#fff")
+      ) |>
+      e_tooltip(
+        trigger   = "item",
+        formatter = "{b}: {d}%"
+      ) |>
+      e_legend(
+        show = FALSE,
+      ) |>
+      e_text_style(
+        color      = "#ffffff",
+        fontFamily = "Inter"
+      ) |>
+      e_color(c(
+        "#DB3069",
+        "#F45D09",
+        "#8A4285",
+        "#00AEF6",
+        "#43B171",
+        "#F03838",
+        "#FFD931",
+        "#3030bf",
+        "#1be0b9"
+      ))
+  })
   
   
   

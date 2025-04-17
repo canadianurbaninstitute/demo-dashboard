@@ -7,6 +7,8 @@ library(sf)
 library(echarts4r)
 library(jsonlite)
 
+e_theme_register("theme/demo_theme.json", name = "chartTheme")
+e_common(theme = "chartTheme")
 
 
 # load in the necessary data
