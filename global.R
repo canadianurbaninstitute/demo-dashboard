@@ -31,6 +31,9 @@ name <- "Downtown Yonge BIA"
 
 bia <- st_read("./data/downtown_yonge.geojson")
 
+toronto_boundary = st_read("./data/toronto_boundary.geojson")
+
+
 # Business Data
 
 ms_businesses = st_read("./data/ms_businesses.geojson")
@@ -41,15 +44,6 @@ mytheme = bs_theme(preset="bootstrap", version = "5", bg = "#222", fg = "#fff",
                   primary = "#00AEF6", secondary = "#DB3069", success = "#43B171", danger = "#F03838",
                   warning = "#FFD931", base_font = font_google("Inter"), heading_font = font_google("Roboto Mono"),
                   navbar_bg = "#00AEF6")
-
-
-e_theme_register("theme/demo_theme.json", name = "chartTheme")
-
-e_common(
-  font_family = "Inter",
-  theme = chartTheme
-)
-
 
 # Civic Data
 

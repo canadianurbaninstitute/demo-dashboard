@@ -70,12 +70,12 @@ ui <- page_navbar(
               nav_panel(
                 title = "Visitor Trends",
                 card(
-                  card_title("Monthly Visits since 2021"),
                   card_body(
                     p("This chart measures the number of pedestrian visits to the BIA on a monthly basis from 2021."),
                     echarts4rOutput("visitorLevels")
                   )
                 ),
+                h3("Visitor Info"),
                 layout_sidebar(
                   sidebar = sidebar(
           selectInput(
@@ -94,15 +94,19 @@ ui <- page_navbar(
                     )
                   ),
                   card(
-                    card_body(echarts4rOutput("visitorTypes"))
+                    card_body(
+                      p("The chart shows the number and type of visitors (resident, recurring, infrequent) for the current quarter and the same quarter from the previous year."),
+                      echarts4rOutput("visitorTypes"))
                   ),
                     card(
                       card_body(
+                        p("The chart compares visits by day of the week for the current quarter and the same quarter from the previous year."),
                         echarts4rOutput("visitorDoW")
                       )
                     ),
                     card(
                       card_body(
+                        p("The chart compares visits by time of the day for the current quarter and the same quarter from the previous year."),
                         echarts4rOutput("visitorToD")
                       )
                     )
@@ -120,6 +124,7 @@ ui <- page_navbar(
               nav_panel(
                 title = "Business",
                 h3("Business Distribution"),
+                p("The business distribution map shows the location and type of main street businesses across Downtown Yonge."),
                 layout_column_wrap(
                   width = 1/2,
                   card(
@@ -150,6 +155,7 @@ ui <- page_navbar(
                   )
                 ),
                 h3("Employment Size"),
+                p("The employment size map shows business locations by type and their approximate employment size."),
                 card(
                   full_screen = FALSE,
                   card_body(
@@ -161,6 +167,8 @@ ui <- page_navbar(
               nav_panel(
                 title = "Civic Infrastructure",
                 h3("Civic Infrastructure Distribution"),
+                p("The civic infrastructure distribution map shows the location and type of civic infrastructure across Downtown Yonge."),
+                
                 layout_column_wrap(
                   width = 1/2,
                   card(
@@ -196,11 +204,13 @@ ui <- page_navbar(
                 h3("Housing"),
                   card(
                     card_body(
+                      p("The housing construction chart shows the share of housing units built in different time periods for Downtown Yonge and Toronto CMA."),
                       echarts4rOutput("housingConstruction")
                     )
                   ),
                   card(
                     card_body(
+                      p("The housing type chart breaks down the percentage of each dwelling type, such as apartments, single-detached, and duplexes."),
                       echarts4rOutput("housingType")
                     )
                   )
@@ -208,6 +218,8 @@ ui <- page_navbar(
               nav_panel(
                 title = "Urban Form",
                 h3("Urban Form Map"),
+                p("The urban form map displays Downtown Yonge’s boundary, nearby transit lines, and green spaces."),
+                
                 card(
                   full_screen = FALSE,
                   card_body(
@@ -218,54 +230,60 @@ ui <- page_navbar(
                 h3("Commute"),
                 card(
                   card_body(
+                    p("The commute mode chart shows how people in Downtown Yonge and Toronto CMA commute to work by walking, public transit, car, or bike."),
                     echarts4rOutput("commuteMode")
                   )
                 )
               ),
               nav_panel(
                 title = "Neighbourhood Demographics",
-                h3("Demographic Map"),
-                card(
-                  full_screen = FALSE,
-                  card_body(
-                    class = "p-0",
-                    maplibreOutput("demoMap")
+                h3("Demographic Highlights"),
+                layout_columns(
+                  value_box(
+                    title = "Average Household Income", value = "$82,000",
+                    theme = "primary", showcase = bsicons::bs_icon("cash"),
+                    showcase_layout = "left center", full_screen = FALSE, fill = TRUE,
+                    height = NULL
+                  ),
+                  value_box(
+                    title = "Average Age", value = "28",
+                    theme = "secondary", showcase = bsicons::bs_icon("calendar-fill"),
+                    showcase_layout = "left center", full_screen = FALSE, fill = TRUE,
+                    height = NULL
                   )
                 ),
-                h3("Demographic Summary"),
                 layout_columns(
                   uiOutput("VisMinBox"),
                   uiOutput("IndigBox"),
                   uiOutput("ImmOutput")
                 ),
-                layout_column_wrap(
-                  width = 1/2,
+                h3("Demographic Breakdown"),
                   card(
                     full_screen = FALSE,
                     card_body(
+                      p("The population pyramid shows the age and gender distribution of residents."),
                       echarts4rOutput("demoAge")
                     )
                   ),
                   card(
                     card_body(
+                      p("The census family structure chart compares Downtown Yonge and Toronto CMA by type of family (e.g., married, common-law)."),
                       echarts4rOutput("demoFamily")
                     )
-                  )
-                ),
-                layout_column_wrap(
-                  width = 1/2,
+                  ),
                   card(
                     full_screen = FALSE,
                     card_body(
+                      p("The household income chart displays the percentage of households in each income bracket for Downtown Yonge vs. Toronto CMA."),
                       echarts4rOutput("demoIncome")
                     )
                   ),
                   card(
                     card_body(
+                      p("The employment occupation chart highlights the share of population in different job sectors."),
                       echarts4rOutput("demoOccupation")
                     )
                   )
-                )
               )
             )
   ),

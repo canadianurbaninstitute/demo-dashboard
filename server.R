@@ -21,7 +21,7 @@ server <- function(input, output, session) {
         fill_extrusion_color = interpolate(
           column = 'render_height',
           values = c(0, 200, 400),
-          stops = c('#666', '#999', '#eee')
+          stops = c('#444', '#666', '#999')
         ),
         fill_extrusion_height = list(
           'interpolate',
@@ -31,7 +31,8 @@ server <- function(input, output, session) {
           0,
           15,
           list('get', 'render_height')
-        )
+        ),
+        fill_extrusion_opacity = 0.8
       ) |>
       add_fill_layer(id = "bia_boundary",
                      source = bia,
@@ -55,7 +56,13 @@ server <- function(input, output, session) {
       add_fill_layer(id = "bia_boundary",
                      source = bia,
                      fill_color = "#00AEF6",
-                     fill_opacity = 0.5)
+                     fill_opacity = 0.5) |>
+      add_line_layer(
+        id = "toronto_boundary",
+        source = toronto_boundary,
+        line_color = "#eee",
+        line_opacity = 0.7
+      )
   }) 
   
   
@@ -100,8 +107,11 @@ server <- function(input, output, session) {
       e_tooltip(trigger = "axis") %>%
       e_text_style(fontFamily = "Inter") %>%
       e_legend(show = FALSE) %>%
-      e_theme_custom("theme/demo_theme.json")
-  })
+      e_datazoom(type = "slider", textStyle = list(color = "#fff"), moveHandleStyle = list(color="#72CCFE"), emphasis = list(moveHandleStyle = list(color="#72CCFE"))) %>%
+      e_title("Monthly Visits since 2021", textStyle = list(color = "#fff")) %>%
+      e_theme_custom("theme/demo_theme.json") 
+
+    })
   
   
   # Visitor Types Plot
@@ -492,7 +502,7 @@ server <- function(input, output, session) {
         fill_extrusion_color = interpolate(
           column = 'render_height',
           values = c(0, 200, 400),
-          stops = c('#222', '#444', '#666')
+          stops = c('#444', '#666', '#999')
         ),
         fill_extrusion_height = list(
           'interpolate',
@@ -595,10 +605,11 @@ server <- function(input, output, session) {
       filter(Area == "Downtown Yonge")
 
     value_box(
-      title = "Percentage of Visible Minorities",
-      value = paste(round(vismin_filtered$`Visible Minority Total`[1],2), " %"),
-      theme = "success",
+      title = "Visible Minorities",
+      value = paste(round(vismin_filtered$`Visible Minority Total`[1],0), " %"),
+      theme = "danger",
       showcase_layout = "left center", 
+      showcase = bsicons::bs_icon("people-fill"),
       full_screen = FALSE, 
       fill = TRUE,
       height = NULL
@@ -612,10 +623,11 @@ server <- function(input, output, session) {
       filter(Area == "Downtown Yonge")
     
     value_box(
-      title = "Percentage of Indigenous Population",
-      value = paste(round(indig_filtered$`Indigenous Identity`[1],2), " %"),
-      theme = "primary",
+      title = "Indigenous Population",
+      value = paste(round(indig_filtered$`Indigenous Identity`[1],0), " %"),
+      theme = "success",
       showcase_layout = "left center", 
+      showcase = bsicons::bs_icon("person-fill"),
       full_screen = FALSE, 
       fill = TRUE,
       height = NULL
@@ -629,10 +641,11 @@ server <- function(input, output, session) {
       filter(Area == "Downtown Yonge")
     
     value_box(
-      title = "Percentage of Immigrants",
-      value = paste(round(imm_filtered$Immigrants[1],2), " %"),
+      title = "Immigrants",
+      value = paste(round(imm_filtered$Immigrants[1],0), " %"),
       theme = "warning",
       showcase_layout = "left center", 
+      showcase = bsicons::bs_icon("globe-americas"),
       full_screen = FALSE, 
       fill = TRUE,
       height = NULL
@@ -664,12 +677,19 @@ server <- function(input, output, session) {
       group_by(gender) %>%
       e_charts(age_group) %>%
       e_bar(percentage, stack = "percentage") %>%
-      e_color(c("#002940", "#00AEF6")) %>%
+      e_color(c("#DB3069", "#00AEF6")) %>%
       e_flip_coords() %>%
       e_tooltip(trigger = "axis") %>%
       e_title("Population Pyramid", textStyle = list(color = "#fff")) %>%
-      e_y_axis(name = "Percentage of Population", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
-      e_x_axis(name = "Age Group", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_y_axis(name = "% of Population", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_x_axis(
+        name = "Percentage of Population",
+        axisLabel = list(
+          formatter = htmlwidgets::JS("function(value){ return Math.abs(value); }")
+        ),
+        axisLine = list(lineStyle = list(color = "#4f4f4f")),
+        splitLine = list(lineStyle = list(color = "#4f4f4f"))
+      ) %>%
       e_legend(top = "bottom") %>%
       e_grid(containLabel = TRUE) %>%
       e_legend(
@@ -694,7 +714,7 @@ server <- function(input, output, session) {
       group_by(Area) %>%
       e_charts(category) %>%
       e_bar(percentage) %>%
-      e_color(c("#002940", "#00AEF6")) %>%
+      e_color(c("#DB3069", "#00AEF6")) %>%
       e_tooltip(trigger = "axis") %>%
       e_title("Census Family Structure", textStyle = list(color = "#fff")) %>%
       e_y_axis(name = "Percentage of Population", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
@@ -725,7 +745,7 @@ server <- function(input, output, session) {
       group_by(Area) %>%
       e_charts(category) %>%
       e_bar(percentage) %>%
-      e_color(c("#002940", "#00AEF6")) %>%
+      e_color(c("#DB3069", "#00AEF6")) %>%
       e_tooltip(trigger = "axis") %>%
       e_title("Household Income", textStyle = list(color = "#fff")) %>%
       e_y_axis(name = "Percentage of Population", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
@@ -746,7 +766,7 @@ server <- function(input, output, session) {
     
     # filter and clean the occupation data
     demosOccupationPlot = neighbourhood_demos %>%
-      select(Area, (80:89)) %>%
+      select(Area, (81:89)) %>%
       pivot_longer(!Area, names_to = "category", values_to = "percentage")
     
     # plot the data using the echarts package
@@ -754,7 +774,7 @@ server <- function(input, output, session) {
       group_by(Area) %>%
       e_charts(category) %>%
       e_bar(percentage) %>%
-      e_color(c("#002940", "#00AEF6")) %>%
+      e_color(c("#DB3069", "#00AEF6")) %>%
       e_tooltip(trigger = "axis") %>%
       e_title("Employment Occupation", textStyle = list(color = "#fff")) %>%
       e_y_axis(name = "Percentage of Population", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
