@@ -7,8 +7,12 @@ library(sf)
 library(echarts4r)
 library(jsonlite)
 
-e_theme_register("theme/demo_theme.json", name = "chartTheme")
-e_common(theme = "chartTheme")
+
+theme_json_string <- paste(readLines("theme/demo_theme.json", warn = FALSE), collapse = "\n")
+cat(theme_json_string)
+
+
+
 
 
 # load in the necessary data
@@ -83,16 +87,21 @@ ui <- page_navbar(
   theme = mytheme |> bs_add_rules("
                     h1 { font-family: 'Inter', sans-serif; }
                   "),
-  header = tags$head(tags$style(HTML(
-    "body { padding-top: 70px!important}
-      .nav-pills {
-        border: 1px solid #494949;
-        padding: 0.5em;
-        border-radius: 1em;
-        margin-bottom: 1em;}
-      #legend, .maplibregl-popup-content {background-color: #222!important;}
-      .maplibregl-popup-tip {border-top-color: #222!important;}"
-  ))),
+  header = tags$head(
+    # Your existing custom CSS styles
+    tags$style(HTML(
+      "body { padding-top: 70px!important}
+       .nav-pills {
+         border: 1px solid #494949;
+         padding: 0.5em;
+         border-radius: 1em;
+         margin-bottom: 1em;}
+       #legend, .maplibregl-popup-content {background-color: #222!important;}
+       .maplibregl-popup-tip {border-top-color: #222!important;}"
+    )),
+    e_theme_register("theme/demo_theme.json", name = "chartTheme"),
+    e_common(theme = "chartTheme")
+  ), # End of header
 
   # MOVE THIS INTO EXTERNAL CSS ^
 
@@ -495,6 +504,7 @@ server <- function(input, output, session) {
       dplyr::arrange(Date) %>%
       e_charts(Date) %>%
       e_line(serie = Count, name = "Visits") %>%
+      e_theme("chartTheme") %>%
       e_x_axis(
         type = "time",
         min = "2021-01-01",
@@ -508,9 +518,8 @@ server <- function(input, output, session) {
       e_text_style(fontFamily = "Inter") %>%
       e_legend(show = FALSE) %>%
       e_datazoom(type = "slider", textStyle = list(color = "#fff"), moveHandleStyle = list(color = "#72CCFE"), emphasis = list(moveHandleStyle = list(color = "#72CCFE"))) %>%
-      e_title("Monthly Visits since 2021", textStyle = list(color = "#fff")) %>%
-      e_toolbox_feature(feature = "saveAsImage") %>%
-      e_theme_custom("theme/demo_theme.json")
+      e_title("Monthly Visits since 2021") %>%
+      e_toolbox_feature(feature = "saveAsImage") 
   })
 
 
@@ -539,18 +548,17 @@ server <- function(input, output, session) {
       e_bar(Visits, stack = "Visits", bind = Visits) %>%
       e_color(c("#00AEF6", "#DB3069", "#43B171")) %>%
       e_tooltip(trigger = "axis") %>%
-      e_title("Visits by Type of Visitor", textStyle = list(color = "#fff")) %>%
-      e_y_axis(name = "Visits", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
-      e_x_axis(name = "Year", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_title("Visits by Type of Visitor") %>%
+      e_y_axis(name = "Visits",  ) %>%
+      e_x_axis(name = "Year",  ) %>%
       e_legend(top = "bottom") %>%
       e_grid(containLabel = TRUE) %>%
       e_legend(
         orient = "horizontal",
         left = "center",
-        bottom = 0,
-        textStyle = list(color = "#fff", fontSize = 12)
+        bottom = 0
       ) %>%
-      e_text_style(color = "#ffffff", fontFamily = "Inter") %>%
+      e_text_style(fontFamily = "Inter") %>%
       e_toolbox_feature(feature = "saveAsImage")
   })
 
@@ -578,20 +586,18 @@ server <- function(input, output, session) {
       group_by(Quarter_Year) %>%
       e_charts(Day) %>%
       e_bar(Visits) %>%
-      e_color(c("#DB3069", "#00AEF6")) %>%
       e_tooltip(trigger = "axis") %>%
-      e_title("Visits by Day of the Week", textStyle = list(color = "#fff")) %>%
-      e_y_axis(name = "Visits", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
-      e_x_axis(name = "Year", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_title("Visits by Day of the Week") %>%
+      e_y_axis(name = "Visits",  ) %>%
+      e_x_axis(name = "Year",  ) %>%
       e_legend(top = "bottom") %>%
       e_grid(containLabel = TRUE) %>%
       e_legend(
         orient = "horizontal",
         left = "center",
-        bottom = 0,
-        textStyle = list(color = "#fff", fontSize = 12)
+        bottom = 0
       ) %>%
-      e_text_style(color = "#ffffff", fontFamily = "Inter") %>%
+      e_text_style(fontFamily = "Inter") %>%
       e_toolbox_feature(feature = "saveAsImage")
   })
 
@@ -619,20 +625,18 @@ server <- function(input, output, session) {
       group_by(Quarter_Year) %>%
       e_charts(Time) %>%
       e_bar(Visits) %>%
-      e_color(c("#DB3069", "#00AEF6")) %>%
       e_tooltip(trigger = "axis") %>%
-      e_title("Visits by Time of Day", textStyle = list(color = "#fff")) %>%
-      e_y_axis(name = "Visits", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
-      e_x_axis(name = "Year", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_title("Visits by Time of Day") %>%
+      e_y_axis(name = "Visits",  ) %>%
+      e_x_axis(name = "Year",  ) %>%
       e_legend(top = "bottom") %>%
       e_grid(containLabel = TRUE) %>%
       e_legend(
         orient = "horizontal",
         left = "center",
-        bottom = 0,
-        textStyle = list(color = "#fff", fontSize = 12)
+        bottom = 0
       ) %>%
-      e_text_style(color = "#ffffff", fontFamily = "Inter") %>%
+      e_text_style(fontFamily = "Inter") %>%
       e_toolbox_feature(feature = "saveAsImage")
   })
 
@@ -731,7 +735,7 @@ server <- function(input, output, session) {
         label = list(show = FALSE),
         labelLine = list(show = FALSE)
       ) |>
-      e_title("Main Street Business Types", left = "center", textStyle = list(color = "#fff")) |>
+      e_title("Main Street Business Types", left = "center") |>
       e_tooltip(
         trigger = "item",
         formatter = htmlwidgets::JS("function(params){ return params.name + ': ' + params.value; }")
@@ -739,11 +743,11 @@ server <- function(input, output, session) {
       e_legend(
         orient = "vertical",
         left = "left",
-        bottom = 0,
-        textStyle = list(color = "#fff", fontSize = 12)
+        bottom = 0
       ) |>
-      e_text_style(color = "#ffffff", fontFamily = "Inter") |>
-      e_color(c("#F03838", "#43B171", "#00AEF6"))
+      e_text_style(fontFamily = "Inter") |>
+      e_color(c("#F03838", "#43B171", "#00AEF6")) |>
+      e_toolbox_feature(feature = "saveAsImage") 
   })
 
 
@@ -793,7 +797,7 @@ server <- function(input, output, session) {
         label = list(show = FALSE),
         labelLine = list(show = FALSE)
       ) |>
-      e_title("Civic Infrastructure Types", left = "center", textStyle = list(color = "#fff")) |>
+      e_title("Civic Infrastructure Types", left = "center") |>
       e_tooltip(
         trigger = "item",
         formatter = htmlwidgets::JS("function(params){ return params.name + ': ' + params.value; }")
@@ -801,11 +805,11 @@ server <- function(input, output, session) {
       e_legend(
         orient = "vertical",
         left = "left",
-        bottom = 0,
-        textStyle = list(color = "#fff", fontSize = 12)
+        bottom = 0
       ) |>
-      e_text_style(color = "#ffffff", fontFamily = "Inter") |>
-      e_color(c("#DB3069", "#F45D09", "#8A4285", "#00AEF6", "#43B171"))
+      e_text_style(fontFamily = "Inter") |>
+      e_color(c("#DB3069", "#F45D09", "#8A4285", "#00AEF6", "#43B171")) |>
+      e_toolbox_feature(feature = "saveAsImage") 
   })
 
 
@@ -852,18 +856,17 @@ server <- function(input, output, session) {
         itemStyle = list(color = "#DB3069")
       ) %>% # dark blue
       e_tooltip(trigger = "axis") %>%
-      e_title("Housing Construction by Year and Area", textStyle = list(color = "#fff")) %>%
-      e_y_axis(name = "Percentage (%)", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
-      e_x_axis(name = "Housing", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_title("Housing Construction by Year and Area") %>%
+      e_y_axis(name = "Percentage (%)",  ) %>%
+      e_x_axis(name = "Housing",  ) %>%
       e_legend(top = "bottom") %>%
       e_grid(containLabel = TRUE) %>%
       e_legend(
         orient = "horizontal",
         left = "left",
-        bottom = 0,
-        textStyle = list(color = "#fff", fontSize = 12)
+        bottom = 0
       ) %>%
-      e_text_style(color = "#ffffff", fontFamily = "Inter") %>%
+      e_text_style(fontFamily = "Inter") %>%
       e_toolbox_feature(feature = "saveAsImage")
   })
 
@@ -898,18 +901,17 @@ server <- function(input, output, session) {
         itemStyle = list(color = "#DB3069")
       ) %>% # dark blue
       e_tooltip(trigger = "axis") %>%
-      e_title("Housing Type by Year and Area", textStyle = list(color = "#fff")) %>%
-      e_y_axis(name = "Percentage (%)", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
-      e_x_axis(name = "Housing", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_title("Housing Type by Year and Area") %>%
+      e_y_axis(name = "Percentage (%)",  ) %>%
+      e_x_axis(name = "Housing",  ) %>%
       e_legend(top = "bottom") %>%
       e_grid(containLabel = TRUE) %>%
       e_legend(
         orient = "horizontal",
         left = "left",
-        bottom = 0,
-        textStyle = list(color = "#fff", fontSize = 12)
+        bottom = 0
       ) %>%
-      e_text_style(color = "#ffffff", fontFamily = "Inter") %>%
+      e_text_style(fontFamily = "Inter") %>%
       e_toolbox_feature(feature = "saveAsImage")
   })
 
@@ -1012,23 +1014,22 @@ server <- function(input, output, session) {
       e_tooltip(
         trigger = "axis"
       ) %>%
-      e_title("Commute Mode by Area", textStyle = list(color = "#fff")) %>%
+      e_title("Commute Mode by Area") %>%
       e_y_axis(
         name = "Percentage (%)",
-        axisLine = list(lineStyle = list(color = "#4f4f4f")),
-        splitLine = list(lineStyle = list(color = "#4f4f4f"))
+        
+        
       ) %>%
       e_x_axis(
         name = "Commute Mode",
-        axisLine = list(lineStyle = list(color = "#4f4f4f")),
-        splitLine = list(lineStyle = list(color = "#4f4f4f"))
+        
+        
       ) %>%
       e_legend(
-        orient = "horizontal", left = "left", bottom = 0,
-        textStyle = list(color = "#fff", fontSize = 12)
+        orient = "horizontal", left = "left", bottom = 0
       ) %>%
       e_grid(containLabel = TRUE) %>%
-      e_text_style(color = "#ffffff", fontFamily = "Inter") %>%
+      e_text_style(fontFamily = "Inter") %>%
       e_toolbox_feature(feature = "saveAsImage")
   })
 
@@ -1126,28 +1127,26 @@ server <- function(input, output, session) {
       group_by(gender) %>%
       e_charts(age_group) %>%
       e_bar(percentage, stack = "percentage") %>%
-      e_color(c("#DB3069", "#00AEF6")) %>%
       e_flip_coords() %>%
       e_tooltip(trigger = "axis") %>%
-      e_title("Population Pyramid", textStyle = list(color = "#fff")) %>%
-      e_y_axis(name = "% of Population", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_title("Population Pyramid") %>%
+      e_y_axis(name = "% of Population") %>%
       e_x_axis(
         name = "Percentage of Population",
         axisLabel = list(
           formatter = htmlwidgets::JS("function(value){ return Math.abs(value); }")
         ),
-        axisLine = list(lineStyle = list(color = "#4f4f4f")),
-        splitLine = list(lineStyle = list(color = "#4f4f4f"))
+        
+        
       ) %>%
       e_legend(top = "bottom") %>%
       e_grid(containLabel = TRUE) %>%
       e_legend(
         orient = "horizontal",
         left = "left",
-        bottom = 0,
-        textStyle = list(color = "#fff", fontSize = 12)
+        bottom = 0
       ) %>%
-      e_text_style(color = "#ffffff", fontFamily = "Inter") %>%
+      e_text_style(fontFamily = "Inter") %>%
       e_toolbox_feature(feature = "saveAsImage")
   })
 
@@ -1184,11 +1183,12 @@ server <- function(input, output, session) {
       e_legend(
         orient = "vertical",
         right = "right",
-        bottom = 0,
-        textStyle = list(color = "#fff", fontSize = 12)
+        bottom = 0
       ) |>
-      e_text_style(color = "#ffffff", fontFamily = "Inter") |>
-      e_color(c("#DB3069", "#F45D09", "#8A4285", "#00AEF6", "#43B171"))
+      e_text_style(fontFamily = "Inter") |>
+      e_color(c("#DB3069", "#F45D09", "#8A4285", "#00AEF6", "#43B171")) |>
+      e_toolbox_feature(feature = "saveAsImage") 
+    
   })
 
 
@@ -1226,11 +1226,12 @@ server <- function(input, output, session) {
       e_legend(
         orient = "vertical",
         right = "right",
-        bottom = 0,
-        textStyle = list(color = "#fff", fontSize = 12)
+        bottom = 0
       ) |>
-      e_text_style(color = "#ffffff", fontFamily = "Inter") |>
-      e_color(c("#DB3069", "#F45D09", "#8A4285", "#00AEF6", "#43B171"))
+      e_text_style(fontFamily = "Inter") |>
+      e_color(c("#DB3069", "#F45D09", "#8A4285", "#00AEF6", "#43B171")) |>
+      e_toolbox_feature(feature = "saveAsImage") 
+    
   })
 
 
@@ -1248,20 +1249,18 @@ server <- function(input, output, session) {
       group_by(Area) %>%
       e_charts(category) %>%
       e_bar(percentage) %>%
-      e_color(c("#DB3069", "#00AEF6")) %>%
       e_tooltip(trigger = "axis") %>%
-      e_title("Household Income", textStyle = list(color = "#fff")) %>%
-      e_y_axis(name = "Percentage of Population", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
-      e_x_axis(name = "Income Category", axisLine = list(lineStyle = list(color = "#4f4f4f")), splitLine = list(lineStyle = list(color = "#4f4f4f"))) %>%
+      e_title("Household Income") %>%
+      e_y_axis(name = "Percentage of Population") %>%
+      e_x_axis(name = "Income Category") %>%
       e_legend(top = "bottom") %>%
       e_grid(containLabel = TRUE) %>%
       e_legend(
         orient = "horizontal",
         left = "left",
-        bottom = 0,
-        textStyle = list(color = "#fff", fontSize = 12)
+        bottom = 0
       ) %>%
-      e_text_style(color = "#ffffff", fontFamily = "Inter") %>%
+      e_text_style(fontFamily = "Inter") %>%
       e_toolbox_feature(feature = "saveAsImage")
   })
 
@@ -1309,7 +1308,9 @@ server <- function(input, output, session) {
         "#FFD931",
         "#3030bf",
         "#1be0b9"
-      ))
+      )) |>
+      e_toolbox_feature(feature = "saveAsImage") 
+    
   })
 
   # Toronto CMA occupation donut
@@ -1353,7 +1354,9 @@ server <- function(input, output, session) {
         "#FFD931",
         "#3030bf",
         "#1be0b9"
-      ))
+      )) |>
+      e_toolbox_feature(feature = "saveAsImage") 
+    
   })
 }
 
