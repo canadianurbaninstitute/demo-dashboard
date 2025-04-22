@@ -50,7 +50,7 @@ server <- function(input, output, session) {
   
   output$map1 <- renderMaplibre({
     maplibre(style = carto_style("dark-matter"),
-             center = c(-79.381070, 43.656183),
+             center = c(-79.381070, 43.6561),
              zoom = 11,
              bearing = -17) |> 
       add_fill_layer(id = "bia_boundary",
@@ -241,7 +241,7 @@ server <- function(input, output, session) {
   
   output$businessMap <- renderMaplibre({
     maplibre(style = carto_style("dark-matter"),
-             center = c(-79.381070, 43.656183),
+             center = c(-79.381, 43.657),
              zoom = 14) |> 
       add_fill_layer(id = "bia_boundary",
                      source = bia,
@@ -275,7 +275,7 @@ server <- function(input, output, session) {
   
   output$employmentSize <- renderMaplibre({
     maplibre(style = carto_style("dark-matter"),
-             center = c(-79.381070, 43.656183),
+             center = c(-79.381, 43.657),
              zoom = 14) |> 
       add_fill_layer(id = "bia_boundary",
                      source = bia,
@@ -336,7 +336,7 @@ server <- function(input, output, session) {
   
   output$civicMap <- renderMaplibre({
     maplibre(style = carto_style("dark-matter"),
-             center = c(-79.381070, 43.656183),
+             center = c(-79.381, 43.657),
              zoom = 14) |> 
       add_fill_layer(id = "bia_boundary",
                      source = bia,
@@ -830,7 +830,8 @@ server <- function(input, output, session) {
       e_charts(category) |>
       e_pie(
         serie  = percentage,
-        radius = c("40%", "70%")
+        radius = c("40%", "70%"),
+        label = list(color = "#fff", borderWidth = "0")
       ) |>
       e_title(
         "Downtown Yonge: Employment by Occupation",
@@ -874,6 +875,7 @@ server <- function(input, output, session) {
       e_pie(
         serie  = percentage,
         radius = c("40%", "70%"),
+        label = list(color = "#fff", borderWidth = "0")
       ) |>
       e_title(
         "Toronto CMA: Employment by Occupation",

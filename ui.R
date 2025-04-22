@@ -5,16 +5,16 @@ ui <- page_navbar(
                     h1 { font-family: 'Inter', sans-serif; }
                   "),
   header = tags$head(tags$style(HTML(
-  "body { padding-top: 70px!important;} 
-  .nav-pills {
-    border: 1px solid #494949;
-    padding: 0.5em;
-    border-radius: 1em;
-    margin-bottom: 1em;}
-  #legend, .maplibregl-popup-content {background-color: #222!important;}
-  .maplibregl-popup-tip {border-top-color: #222!important;}"
-  )
-  )
+      "body { padding-top: 70px!important} 
+      .nav-pills {
+        border: 1px solid #494949;
+        padding: 0.5em;
+        border-radius: 1em;
+        margin-bottom: 1em;}
+      #legend, .maplibregl-popup-content {background-color: #222!important;}
+      .maplibregl-popup-tip {border-top-color: #222!important;}"
+      )
+    )
   ),
   
   # MOVE THIS INTO EXTERNAL CSS ^
@@ -59,8 +59,6 @@ ui <- page_navbar(
               ),
               
             )
-            
-            
   ),
   
   
@@ -78,7 +76,7 @@ ui <- page_navbar(
                 h3("Visitor Info"),
                 layout_sidebar(
                   sidebar = sidebar(
-          selectInput(
+                    selectInput(
                       "year",
                       "Select Year",
                       choices = c("2023", "2024"),
@@ -116,7 +114,7 @@ ui <- page_navbar(
                 title = "Visitor Demographics"
               )
             )
-  ),
+          ),
   
   nav_panel("Neighbourhood Profile", 
             h1(name),
@@ -152,15 +150,6 @@ ui <- page_navbar(
                     theme = "warning", showcase = bsicons::bs_icon("speedometer"),
                     showcase_layout = "left center", full_screen = FALSE, fill = TRUE,
                     height = NULL
-                  )
-                ),
-                h3("Employment Size"),
-                p("The employment size map shows business locations by type and their approximate employment size."),
-                card(
-                  full_screen = FALSE,
-                  card_body(
-                    class = "p-0",
-                    maplibreOutput("employmentSize")
                   )
                 )
               ),
@@ -235,12 +224,45 @@ ui <- page_navbar(
                 )
               ),
               nav_panel(
+                title = "Employment",
+                h3("Employment Size"),
+                p("The employment size map shows business locations by type and their approximate employment size."),
+                card(
+                  full_screen = FALSE,
+                  card_body(
+                    class = "p-0",
+                    maplibreOutput("employmentSize")
+                  )
+                ),
+                p("The employment occupation chart highlights the share of population in different job sectors."),
+                layout_column_wrap(
+                  width = 1/2,
+                  card(
+                    card_body(
+                      echarts4rOutput("demoOccupation")
+                    )
+                  ),
+                  card(
+                    card_body(
+                      echarts4rOutput("demoOccupationCMA")
+                    )
+                  )
+                )
+                
+              ),
+              nav_panel(
                 title = "Neighbourhood Demographics",
                 h3("Demographic Highlights"),
                 layout_columns(
                   value_box(
                     title = "Average Household Income", value = "$82,000",
                     theme = "primary", showcase = bsicons::bs_icon("cash"),
+                    showcase_layout = "left center", full_screen = FALSE, fill = TRUE,
+                    height = NULL
+                  ),
+                  value_box(
+                    title = "Average Household Size", value = "1.7",
+                    theme = "orange", showcase = bsicons::bs_icon("diagram-2-fill"),
                     showcase_layout = "left center", full_screen = FALSE, fill = TRUE,
                     height = NULL
                   ),
@@ -284,21 +306,7 @@ ui <- page_navbar(
                       p("The household income chart displays the percentage of households in each income bracket for Downtown Yonge vs. Toronto CMA."),
                       echarts4rOutput("demoIncome")
                     )
-                  ),
-                p("The employment occupation chart highlights the share of population in different job sectors."),
-                layout_column_wrap(
-                  width = 1/2,
-                  card(
-                    card_body(
-                      echarts4rOutput("demoOccupation")
-                    )
-                  ),
-                  card(
-                    card_body(
-                      echarts4rOutput("demoOccupationCMA")
-                    )
                   )
-                ),
               )
             )
   ),
