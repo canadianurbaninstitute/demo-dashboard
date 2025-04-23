@@ -7,14 +7,6 @@ library(sf)
 library(echarts4r)
 library(jsonlite)
 
-
-theme_json_string <- paste(readLines("theme/demo_theme.json", warn = FALSE), collapse = "\n")
-cat(theme_json_string)
-
-
-
-
-
 # load in the necessary data
 
 # Visitor Data
@@ -32,6 +24,8 @@ ff_time_of_day <- read_csv("./data/ff_time_of_day.csv") %>%
 ff_type <- read_csv("./data/ff_vis_type.csv") %>%
   select(-...1) %>%
   rename("Visits" = Count)
+
+visitor_heatmap <- st_read("./data/heatmap.geojson")
 
 # BIA
 
@@ -86,31 +80,22 @@ ui <- page_navbar(
   navbar_options = navbar_options(position = "fixed-top", underline = FALSE),
   theme = mytheme |> bs_add_rules("
                     h1 { font-family: 'Inter', sans-serif; }
-                  "),
-  header = tags$head(
-    # Your existing custom CSS styles
-    tags$style(HTML(
-      "body { padding-top: 70px!important}
-       .nav-pills {
-         border: 1px solid #494949;
-         padding: 0.5em;
-         border-radius: 1em;
-         margin-bottom: 1em;}
-       #legend, .maplibregl-popup-content {background-color: #222!important;}
-       .maplibregl-popup-tip {border-top-color: #222!important;}"
-    )),
-    e_theme_register("theme/demo_theme.json", name = "chartTheme"),
-    e_common(theme = "chartTheme")
-  ), # End of header
+                    .card p { margin-bottom: 0 !important; }
 
-  # MOVE THIS INTO EXTERNAL CSS ^
+                  "),
+  header = tagList(
+      tags$link(rel = "stylesheet", type = "text/css", href = "styles.css"),
+      e_theme_register("theme/demo_theme.json", name = "chartTheme"),
+      { e_common(theme = "chartTheme"); NULL }
+    ),
 
   nav_panel(
     title = "Home",
     h1(name),
     p("Weclome to the Downtown Yonge BIA Main Street Metrics Dashboard! This dashboard gives you a quick snapshot of the BIA. On this page, you’ll find an interactive map alongside highlights from the latest quarter. To explore more, head to the Visitors page for insights on foot traffic and visitor demographics, or visit the Neighbourhood Profile for a deeper look at the area's characteristics."),
     layout_column_wrap(
-      width = 1 / 2,
+      width = NULL,
+      style = css(grid_template_columns = "2fr 1fr"),
       card(
         full_screen = FALSE,
         card_body(
@@ -151,14 +136,24 @@ ui <- page_navbar(
     h1(name),
     navset_pill(
       nav_panel(
-        title = "Visitor Trends",
+        title = "Visitor Levels",
+        layout_sidebar(
+          sidebar = sidebar(
+            dateInput("start_date", "Start Date", value = min(ff_overall$Date)),
+            dateInput("end_date", "End Date", value = max(ff_overall$Date))
+          ),
         card(
+          card_header(
+            p("This chart measures the number of pedestrian visits to the BIA on a monthly basis from 2021. Use the date filters in the sidebar to select a specific time range."),
+          ),
           card_body(
-            p("This chart measures the number of pedestrian visits to the BIA on a monthly basis from 2021."),
             echarts4rOutput("visitorLevels")
           )
+        )
+        )
         ),
-        h3("Visitor Info"),
+        nav_panel(
+        title = "Visitor Trends",
         layout_sidebar(
           sidebar = sidebar(
             selectInput(
@@ -176,21 +171,40 @@ ui <- page_navbar(
               selectize = TRUE
             )
           ),
+          layout_column_wrap(
+          width = 1/2,
           card(
+            card_header(
+              p("The chart shows the number and type of visitors for the current quarter and the same quarter from the previous year."),
+            ),
             card_body(
-              p("The chart shows the number and type of visitors (resident, recurring, infrequent) for the current quarter and the same quarter from the previous year."),
               echarts4rOutput("visitorTypes")
             )
           ),
           card(
+            full_screen = FALSE,
+            card_header(
+              p("The map shows a heatmap distribution of vistors for the current quarter."),
+            ),
             card_body(
+              class = "p-0",
+              maplibreOutput("visitorMap")
+            )
+          )
+          ),
+          card(
+            card_header(
               p("The chart compares visits by day of the week for the current quarter and the same quarter from the previous year."),
+            ),
+            card_body(
               echarts4rOutput("visitorDoW")
             )
           ),
           card(
-            card_body(
+            card_header(
               p("The chart compares visits by time of the day for the current quarter and the same quarter from the previous year."),
+            ),
+            card_body(
               echarts4rOutput("visitorToD")
             )
           )
@@ -277,14 +291,18 @@ ui <- page_navbar(
         title = "Housing",
         h3("Housing"),
         card(
-          card_body(
+          card_header(
             p("The housing construction chart shows the share of housing units built in different time periods for Downtown Yonge and Toronto CMA."),
+          ),
+          card_body(
             echarts4rOutput("housingConstruction")
           )
         ),
         card(
-          card_body(
+          card_header(
             p("The housing type chart breaks down the percentage of each dwelling type, such as apartments, single-detached, and duplexes."),
+          ),
+          card_body(
             echarts4rOutput("housingType")
           )
         )
@@ -302,8 +320,10 @@ ui <- page_navbar(
         ),
         h3("Commute"),
         card(
-          card_body(
+          card_header(
             p("The commute mode chart shows how people in Downtown Yonge and Toronto CMA commute to work by walking, public transit, car, or bike."),
+          ),
+          card_body(
             echarts4rOutput("commuteMode")
           )
         )
@@ -320,6 +340,7 @@ ui <- page_navbar(
           )
         ),
         p("The employment occupation chart highlights the share of population in different job sectors."),
+        card(
         layout_column_wrap(
           width = 1 / 2,
           card(
@@ -332,6 +353,7 @@ ui <- page_navbar(
               echarts4rOutput("demoOccupationCMA")
             )
           )
+        )
         )
       ),
       nav_panel(
@@ -371,6 +393,7 @@ ui <- page_navbar(
           )
         ),
         p("The census family structure chart compares Downtown Yonge and Toronto CMA by type of family (e.g., married, common-law)."),
+        card(
         layout_column_wrap(
           width = 1 / 2,
           card(
@@ -383,6 +406,7 @@ ui <- page_navbar(
               echarts4rOutput("demoFamilyCMA")
             )
           )
+        )
         ),
         card(
           full_screen = FALSE,
@@ -478,48 +502,67 @@ server <- function(input, output, session) {
   # VISITOR TRENDS ----
 
 
-  # Visitor Levels Plot
-  visitorLevelsData <- reactive({
-    req(input$quarter)
-    # set the filter conditions based on the selected year and quarter
-    if (input$quarter == "Q1") {
-      target_end_date <- ymd(paste0(input$year, "03", "31"))
-    } else if (input$quarter == "Q2") {
-      target_end_date <- ymd(paste0(input$year, "06", "30"))
-    } else if (input$quarter == "Q3") {
-      target_end_date <- ymd(paste0(input$year, "09", "30"))
-    } else {
-      target_end_date <- ymd(paste0(input$year, "12", "31"))
-    }
-
-    visitorLevelsFiltered <- ff_overall %>%
-      dplyr::filter(Date < target_end_date) %>%
-      mutate(Percentage = round(Percentage, 2))
-  })
-
   output$visitorLevels <- renderEcharts4r({
-    req(visitorLevelsData())
-    visitorLevelsData() %>%
-      dplyr::mutate(Date = as.Date(Date)) %>%
-      dplyr::arrange(Date) %>%
+    req(input$start_date, input$end_date)
+    
+    filtered_data <- ff_overall %>%
+      filter(Date >= input$start_date & Date <= input$end_date) %>%
+      mutate(Date = as.Date(Date)) %>%
+      arrange(Date)
+    
+    filtered_data %>%
       e_charts(Date) %>%
       e_line(serie = Count, name = "Visits") %>%
       e_theme("chartTheme") %>%
-      e_x_axis(
-        type = "time",
-        min = "2021-01-01",
-        max = "2025-01-01",
-      ) %>%
-      e_y_axis(
-        name = "Visits",
-        max = "10000000",
-      ) %>%
+      e_x_axis(type = "time") %>%
+      e_y_axis(name = "Visits", max = "10000000") %>%
       e_tooltip(trigger = "axis") %>%
       e_text_style(fontFamily = "Inter") %>%
       e_legend(show = FALSE) %>%
-      e_datazoom(type = "slider", textStyle = list(color = "#fff"), moveHandleStyle = list(color = "#72CCFE"), emphasis = list(moveHandleStyle = list(color = "#72CCFE"))) %>%
-      e_title("Monthly Visits since 2021") %>%
-      e_toolbox_feature(feature = "saveAsImage") 
+      # e_datazoom(type = "slider", textStyle = list(color = "#fff"), moveHandleStyle = list(color = "#72CCFE"), emphasis = list(moveHandleStyle = list(color = "#72CCFE"))) %>%
+      e_title("Monthly Visits") %>%
+      e_toolbox_feature(feature = "saveAsImage")
+  })
+  
+  output$visitorMap <- renderMaplibre({
+    maplibre(
+      style = carto_style("dark-matter"),
+      center = c(-79.381070, 43.6561),
+      zoom = 11,
+      bearing = -17
+    ) |>
+      add_line_layer(
+        id = "toronto_boundary",
+        source = toronto_boundary,
+        line_color = "#eee",
+        line_opacity = 0.7
+      ) |>
+      add_heatmap_layer(
+        id = "earthquakes-heat",
+        source = visitor_heatmap,
+        heatmap_weight = interpolate(
+          column = "visits",
+          values = c(0, 180000),
+          stops = c(0, 1)
+        ),
+        heatmap_color = interpolate(
+          property = "heatmap-density",
+          values = seq(0, 1, 0.2),
+          stops = c('rgba(0,0,0,0)', 'royalblue', '#00AEF6', '#43B171', '#FFD931', '#DB3069')
+        ),
+      ) |>
+      add_line_layer(
+        id = "bia_boundary",
+        source = bia,
+        line_color = "#fff",
+      ) |>
+      add_navigation_control(
+        show_compass = TRUE,
+        show_zoom = TRUE,
+        visualize_pitch = FALSE,
+        position = "top-right",
+        orientation = "vertical"
+      )
   })
 
 
@@ -535,7 +578,7 @@ server <- function(input, output, session) {
       select(Type, Quarter_Year, Visits)
 
     # Convert Visitor Type to a Factor
-    type_levels <- c("Resident", "Recurring Visitor", "Infrequent Visitor")
+    type_levels <- c("Local", "Worker / Student", "Other Visitor")
 
     visitorTypePlot <- visitorTypePlot %>%
       mutate(Type = factor(Type, levels = type_levels))
@@ -546,7 +589,6 @@ server <- function(input, output, session) {
       group_by(Type) %>%
       e_charts(Quarter_Year) %>%
       e_bar(Visits, stack = "Visits", bind = Visits) %>%
-      e_color(c("#00AEF6", "#DB3069", "#43B171")) %>%
       e_tooltip(trigger = "axis") %>%
       e_title("Visits by Type of Visitor") %>%
       e_y_axis(name = "Visits",  ) %>%
@@ -849,11 +891,9 @@ server <- function(input, output, session) {
       e_charts(`Construction Year`) %>%
       e_bar(Downtown_Yonge,
         name = "Downtown Yonge",
-        itemStyle = list(color = "#00AEF6")
       ) %>% # light blue
       e_bar(Toronto_CMA,
         name = "Toronto CMA",
-        itemStyle = list(color = "#DB3069")
       ) %>% # dark blue
       e_tooltip(trigger = "axis") %>%
       e_title("Housing Construction by Year and Area") %>%
@@ -894,11 +934,9 @@ server <- function(input, output, session) {
       e_charts(`Housing Type`) %>%
       e_bar(Downtown_Yonge,
         name = "Downtown Yonge",
-        itemStyle = list(color = "#00AEF6")
       ) %>% # light blue
       e_bar(Toronto_CMA,
         name = "Toronto CMA",
-        itemStyle = list(color = "#DB3069")
       ) %>% # dark blue
       e_tooltip(trigger = "axis") %>%
       e_title("Housing Type by Year and Area") %>%
@@ -1005,11 +1043,9 @@ server <- function(input, output, session) {
       e_charts(variable) %>%
       e_bar(Downtown_Yonge,
         name = "Downtown Yonge",
-        itemStyle = list(color = "#00AEF6")
       ) %>%
       e_bar(Toronto_CMA,
         name = "Toronto CMA",
-        itemStyle = list(color = "#DB3069")
       ) %>%
       e_tooltip(
         trigger = "axis"
@@ -1035,12 +1071,6 @@ server <- function(input, output, session) {
 
 
   ## NEIGHBOURHOOD DEMOGRAPHICS ----
-
-  # Demographic Chloropleth Map
-  output$demoMap <- renderMaplibre({
-
-  })
-
 
   # Demographic Summary Boxes
 
@@ -1173,8 +1203,7 @@ server <- function(input, output, session) {
         labelLine = list(show = FALSE)
       ) %>%
       e_title(
-        "Downtown Yonge Family Structure",
-        textStyle = list(color = "#fff")
+        "Downtown Yonge Family Structure"
       ) %>%
       e_tooltip(
         trigger   = "item",
@@ -1216,8 +1245,7 @@ server <- function(input, output, session) {
         labelLine = list(show = FALSE)
       ) %>%
       e_title(
-        "Toronto CMA Family Structure",
-        textStyle = list(color = "#fff")
+        "Toronto CMA Family Structure"
       ) %>%
       e_tooltip(
         trigger   = "item",
@@ -1284,8 +1312,7 @@ server <- function(input, output, session) {
         label = list(color = "#fff", borderWidth = "0")
       ) |>
       e_title(
-        "Downtown Yonge: Employment by Occupation",
-        textStyle = list(color = "#fff")
+        "Downtown Yonge: Employment by Occupation"
       ) |>
       e_tooltip(
         trigger   = "item",
@@ -1330,8 +1357,7 @@ server <- function(input, output, session) {
         label = list(color = "#fff", borderWidth = "0")
       ) |>
       e_title(
-        "Toronto CMA: Employment by Occupation",
-        textStyle = list(color = "#fff")
+        "Toronto CMA: Employment by Occupation"
       ) |>
       e_tooltip(
         trigger   = "item",

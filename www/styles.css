@@ -1,0 +1,16 @@
+body {
+  padding-top: 70px !important;
+}
+.nav-pills {
+  border: 1px solid #494949;
+  padding: 0.5em;
+  border-radius: 1em;
+  margin-bottom: 1em;
+}
+#legend,
+.maplibregl-popup-content {
+  background-color: #222 !important;
+}
+.maplibregl-popup-tip {
+  border-top-color: #222 !important;
+}
