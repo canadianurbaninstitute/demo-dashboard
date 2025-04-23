@@ -5,7 +5,7 @@ account: canadian-urban-institute
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 14549312
-bundleId: 10133636
+bundleId: 10164378
 url: https://canadian-urban-institute.shinyapps.io/demo-dashboard/
 version: 1
 asMultiple: FALSE
