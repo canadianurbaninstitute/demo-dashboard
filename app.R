@@ -309,10 +309,12 @@ ui <- page_navbar(
       ),
       nav_panel(
         title = "Urban Form",
-        h3("Urban Form Map"),
-        p("The urban form map displays Downtown Yonge’s boundary, nearby transit lines, and green spaces."),
+        h3("Urban Form"),
         card(
           full_screen = FALSE,
+          card_header(
+            p("The urban form map displays Downtown Yonge’s boundary, nearby transit lines, and green spaces."),
+          ),
           card_body(
             class = "p-0",
             maplibreOutput("urbanFormMap")
@@ -331,16 +333,20 @@ ui <- page_navbar(
       nav_panel(
         title = "Employment",
         h3("Employment Size"),
-        p("The employment size map shows business locations by type and their approximate employment size."),
         card(
           full_screen = FALSE,
+          card_header(
+            p("The employment size map shows business locations by type and their approximate employment size."),
+          ),
           card_body(
             class = "p-0",
             maplibreOutput("employmentSize")
           )
         ),
-        p("The employment occupation chart highlights the share of population in different job sectors."),
         card(
+          card_header(
+            p("The employment occupation chart highlights the share of population in different job sectors."),
+          ),
         layout_column_wrap(
           width = 1 / 2,
           card(
@@ -387,13 +393,17 @@ ui <- page_navbar(
         h3("Demographic Breakdown"),
         card(
           full_screen = FALSE,
-          card_body(
+          card_header(
             p("The population pyramid shows the age and gender distribution of residents."),
+          ),
+          card_body(
             echarts4rOutput("demoAge")
           )
         ),
-        p("The census family structure chart compares Downtown Yonge and Toronto CMA by type of family (e.g., married, common-law)."),
         card(
+          card_header(
+            p("The census family structure chart compares Downtown Yonge and Toronto CMA by type of family (e.g., married, common-law)."),
+          ),
         layout_column_wrap(
           width = 1 / 2,
           card(
@@ -410,8 +420,10 @@ ui <- page_navbar(
         ),
         card(
           full_screen = FALSE,
-          card_body(
+          card_header(
             p("The household income chart displays the percentage of households in each income bracket for Downtown Yonge vs. Toronto CMA."),
+          ),
+          card_body(
             echarts4rOutput("demoIncome")
           )
         )
@@ -895,7 +907,14 @@ server <- function(input, output, session) {
       e_bar(Toronto_CMA,
         name = "Toronto CMA",
       ) %>% # dark blue
-      e_tooltip(trigger = "axis") %>%
+      e_tooltip(trigger = "axis",
+      formatter = htmlwidgets::JS("function(params) {
+          var result = params[0].name + '<br/>';
+          params.forEach(function(param) {
+            result +=  param.marker + param.seriesName + ': ' + Math.round(param.value[1]) + '%<br/>';
+          });
+          return result;
+        }")) %>%
       e_title("Housing Construction by Year and Area") %>%
       e_y_axis(name = "Percentage (%)",  ) %>%
       e_x_axis(name = "Housing",  ) %>%
@@ -938,7 +957,14 @@ server <- function(input, output, session) {
       e_bar(Toronto_CMA,
         name = "Toronto CMA",
       ) %>% # dark blue
-      e_tooltip(trigger = "axis") %>%
+      e_tooltip(trigger = "axis",
+                formatter = htmlwidgets::JS("function(params) {
+          var result = params[0].name + '<br/>';
+          params.forEach(function(param) {
+            result +=  param.marker + param.seriesName + ': ' + Math.round(param.value[1]) + '%<br/>';
+          });
+          return result;
+        }")) %>%
       e_title("Housing Type by Year and Area") %>%
       e_y_axis(name = "Percentage (%)",  ) %>%
       e_x_axis(name = "Housing",  ) %>%
@@ -1047,19 +1073,20 @@ server <- function(input, output, session) {
       e_bar(Toronto_CMA,
         name = "Toronto CMA",
       ) %>%
-      e_tooltip(
-        trigger = "axis"
-      ) %>%
+      e_tooltip(trigger = "axis",
+                formatter = htmlwidgets::JS("function(params) {
+          var result = params[0].name + '<br/>';
+          params.forEach(function(param) {
+            result +=  param.marker + param.seriesName + ': ' + Math.round(param.value[1]) + '%<br/>';
+          });
+          return result;
+        }")) %>%
       e_title("Commute Mode by Area") %>%
       e_y_axis(
         name = "Percentage (%)",
-        
-        
       ) %>%
       e_x_axis(
         name = "Commute Mode",
-        
-        
       ) %>%
       e_legend(
         orient = "horizontal", left = "left", bottom = 0
@@ -1138,15 +1165,17 @@ server <- function(input, output, session) {
       separate(Groups, into = c("gender", "age_group"), sep = " ", extra = "merge") %>%
       mutate(
         age_group = str_trim(age_group),
-        percentage = if_else(gender == "Females", percentage * -1, percentage)
+        # Make female percentages negative for plotting
+        percentage = if_else(gender == "Females", percentage * -1, percentage),
+        percentage = as.numeric(percentage)
       )
 
     # convert age_group to a factor
     age_levels <- c(
-      "0 To 4", "5 To 9", "10 To 14", "15 To 19", "20 To 24",
-      "25 To 29", "30 To 34", "35 To 39", "40 To 44", "45 To 49",
-      "50 To 54", "55 To 59", "60 To 64", "65 To 69", "70 To 74",
-      "75 To 79", "80 To 84", "85 Or Older"
+      "0 to 4", "5 to 9", "10 to 14", "15 to 19", "20 to 24",
+      "25 to 29", "30 to 34", "35 to 39", "40 to 44", "45 to 49",
+      "50 to 54", "55 to 59", "60 to 64", "65 to 69", "70 to 74",
+      "75 to 79", "80 to 84", "85 or Older"
     )
 
     demoAgePlot <- demoAgeData %>%
@@ -1158,16 +1187,18 @@ server <- function(input, output, session) {
       e_charts(age_group) %>%
       e_bar(percentage, stack = "percentage") %>%
       e_flip_coords() %>%
+      e_color(c('#DB3069', '#00AEF6')) %>%
       e_tooltip(trigger = "axis") %>%
       e_title("Population Pyramid") %>%
-      e_y_axis(name = "% of Population") %>%
+      e_y_axis(name = "% of Population", axisLabel = list(
+        interval = 0
+      )) %>%
       e_x_axis(
-        name = "Percentage of Population",
+        name = "% of Population",
         axisLabel = list(
-          formatter = htmlwidgets::JS("function(value){ return Math.abs(value); }")
+          formatter = htmlwidgets::JS("function(value){ return Math.abs(value); }"),
+          interval = 0
         ),
-        
-        
       ) %>%
       e_legend(top = "bottom") %>%
       e_grid(containLabel = TRUE) %>%
@@ -1277,9 +1308,16 @@ server <- function(input, output, session) {
       group_by(Area) %>%
       e_charts(category) %>%
       e_bar(percentage) %>%
-      e_tooltip(trigger = "axis") %>%
+      e_tooltip(trigger = "axis",
+                formatter = htmlwidgets::JS("function(params) {
+          var result = params[0].name + '<br/>';
+          params.forEach(function(param) {
+            result +=  param.marker + param.seriesName + ': ' + Math.round(param.value[1]) + '%<br/>';
+          });
+          return result;
+        }")) %>%
       e_title("Household Income") %>%
-      e_y_axis(name = "Percentage of Population") %>%
+      e_y_axis(name = "% of Population") %>%
       e_x_axis(name = "Income Category") %>%
       e_legend(top = "bottom") %>%
       e_grid(containLabel = TRUE) %>%
@@ -1316,7 +1354,7 @@ server <- function(input, output, session) {
       ) |>
       e_tooltip(
         trigger   = "item",
-        formatter = "{b}: {d}%"
+        formatter = htmlwidgets::JS("function(params){ return params.name + ': ' + Math.round(params.value) + '%'; }")
       ) |>
       e_legend(
         show = FALSE
@@ -1359,10 +1397,9 @@ server <- function(input, output, session) {
       e_title(
         "Toronto CMA: Employment by Occupation"
       ) |>
-      e_tooltip(
-        trigger   = "item",
-        formatter = "{b}: {d}%"
-      ) |>
+      e_tooltip(trigger = "item",
+                formatter = htmlwidgets::JS("function(params){ return params.name + ': ' + Math.round(params.value) + '%'; }")
+                ) |>
       e_legend(
         show = FALSE,
       ) |>
